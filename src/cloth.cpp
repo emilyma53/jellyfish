@@ -32,7 +32,46 @@ Cloth::~Cloth() {
 
 void Cloth::buildGrid() {
   // TODO (Part 1): Build a grid of masses and springs.
-
+  if (this->orientation == HORIZONTAL) {
+      double x_interval = this->width / this->num_width_points;
+      double z_interval = this->height / this->num_height_points;
+      double x_pos = 0;
+      double z_pos = 0;
+      for (int x_count = 0; x_count < this->width; x_count++) {
+          for (int z_count = 0; z_count < this->height; z_count++) {
+              Vector3D pos = Vector3D(x_pos, 1, z_pos);
+              vector<int> xy{x_count, z_count};
+              if (std::find(this->pinned.begin(), this->pinned.end(), xy) != this->pinned.end()) {
+                  this->point_masses.emplace_back(PointMass(pos, true));
+              } else {
+                  this->point_masses.emplace_back(PointMass(pos, false));
+              }
+              z_pos += z_interval;
+          }
+          x_pos += x_interval;
+      }
+  } else {
+      double x_interval = this->width / this->num_width_points;
+      double y_interval = this->height / this->num_height_points;
+      double x_pos = 0;
+      double y_pos = 0;
+      for (int x_count = 0; x_count < this->width; x_count++) {
+          for (int y_count = 0; y_count < this->height; y_count++) {
+              double min = -1/1000;
+              double max = 1/1000;
+              double z_pos = (max - min) * ((double) rand() / (double) RAND_MAX) + min;
+              Vector3D pos = Vector3D(x_pos, y_pos, z_pos);
+              vector<int> xy{x_count, y_count};
+              if (std::find(this->pinned.begin(), this->pinned.end(), xy) != this->pinned.end()) {
+                  this->point_masses.emplace_back(PointMass(pos, true));
+              } else {
+                  this->point_masses.emplace_back(PointMass(pos, false));
+              }
+              y_pos += y_interval;
+          }
+          x_pos += x_interval;
+      }
+  }
 }
 
 void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParameters *cp,
