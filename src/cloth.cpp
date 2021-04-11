@@ -32,6 +32,8 @@ Cloth::~Cloth() {
 
 void Cloth::buildGrid() {
     // TODO (Part 1): Build a grid of masses and springs.
+
+    // Add all point masses
     double height_interval = this->height / this->num_height_points;
     double width_interval = this->width / this->num_width_points;
     for (int i = 0; i < this->num_height_points; i++) {
@@ -55,15 +57,17 @@ void Cloth::buildGrid() {
             this->point_masses.emplace_back(PointMass(pos, pin_point));
         }
     }
-    // Structural constraints exist between a point mass and the point mass to its left as well as the point mass above it.
-    // Shearing constraints exist between a point mass and the point mass to its diagonal upper left as well as the point mass to its diagonal upper right.
-    // Bending constraints exist between a point mass and the point mass two away to its left as well as the point mass two above it.
+
+    // Add all springs
+    // 1. Structural constraints exist between a point mass and the point mass to its left as well as the point mass above it.
+    // 2. Shearing constraints exist between a point mass and the point mass to its diagonal upper left as well as the point mass to its diagonal upper right.
+    // 3. Bending constraints exist between a point mass and the point mass two away to its left as well as the point mass two above it.
     for (int i = 0; i < this->num_height_points; i++) {
         for (int j = 0; j < this->num_width_points; j++) {
             PointMass p = this->point_masses[i * this->num_width_points + j];
             // structural constraints
             if (j > 0) { // left
-                PointMass o = this->point_masses[i* this->num_width_points + (j - 1)];
+                PointMass o = this->point_masses[i * this->num_width_points + (j - 1)];
                 Spring s = Spring(&o, &p, STRUCTURAL);
                 this->springs.emplace_back(s);
             }
