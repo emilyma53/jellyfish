@@ -31,47 +31,88 @@ Cloth::~Cloth() {
 }
 
 void Cloth::buildGrid() {
-  // TODO (Part 1): Build a grid of masses and springs.
-  if (this->orientation == HORIZONTAL) {
-      double x_interval = this->width / this->num_width_points;
-      double z_interval = this->height / this->num_height_points;
-      double x_pos = 0;
-      double z_pos = 0;
-      for (int x_count = 0; x_count < this->width; x_count++) {
-          for (int z_count = 0; z_count < this->height; z_count++) {
-              Vector3D pos = Vector3D(x_pos, 1, z_pos);
-              vector<int> xy{x_count, z_count};
-              if (std::find(this->pinned.begin(), this->pinned.end(), xy) != this->pinned.end()) {
-                  this->point_masses.emplace_back(PointMass(pos, true));
-              } else {
-                  this->point_masses.emplace_back(PointMass(pos, false));
-              }
-              z_pos += z_interval;
-          }
-          x_pos += x_interval;
-      }
-  } else {
-      double x_interval = this->width / this->num_width_points;
-      double y_interval = this->height / this->num_height_points;
-      double x_pos = 0;
-      double y_pos = 0;
-      for (int x_count = 0; x_count < this->width; x_count++) {
-          for (int y_count = 0; y_count < this->height; y_count++) {
-              double min = -1/1000;
-              double max = 1/1000;
-              double z_pos = (max - min) * ((double) rand() / (double) RAND_MAX) + min;
-              Vector3D pos = Vector3D(x_pos, y_pos, z_pos);
-              vector<int> xy{x_count, y_count};
-              if (std::find(this->pinned.begin(), this->pinned.end(), xy) != this->pinned.end()) {
-                  this->point_masses.emplace_back(PointMass(pos, true));
-              } else {
-                  this->point_masses.emplace_back(PointMass(pos, false));
-              }
-              y_pos += y_interval;
-          }
-          x_pos += x_interval;
-      }
-  }
+    // TODO (Part 1): Build a grid of masses and springs.
+    if (this->orientation == HORIZONTAL) {
+        double x_interval = this->width / this->num_width_points;
+        double z_interval = this->height / this->num_height_points;
+        double x_pos = 0;
+        double z_pos = 0;
+        for (int x_count = 0; x_count < this->width; x_count++) {
+            for (int z_count = 0; z_count < this->height; z_count++) {
+                Vector3D pos = Vector3D(x_pos, 1, z_pos);
+                vector<int> xy {x_count, z_count};
+                if (std::find(this->pinned.begin(), this->pinned.end(), xy) != this->pinned.end()) {
+                    this->point_masses.emplace_back(PointMass(pos, true));
+                } else {
+                    this->point_masses.emplace_back(PointMass(pos, false));
+                }
+                z_pos += z_interval;
+            }
+            x_pos += x_interval;
+        }
+    } else {
+        double x_interval = this->width / this->num_width_points;
+        double y_interval = this->height / this->num_height_points;
+        double x_pos = 0;
+        double y_pos = 0;
+        for (int x_count = 0; x_count < this->width; x_count++) {
+            for (int y_count = 0; y_count < this->height; y_count++) {
+                double min = -1/1000;
+                double max = 1/1000;
+                double z_pos = (max - min) * ((double) rand() / (double) RAND_MAX) + min;
+                Vector3D pos = Vector3D(x_pos, y_pos, z_pos);
+                vector<int> xy {x_count, y_count};
+                if (std::find(this->pinned.begin(), this->pinned.end(), xy) != this->pinned.end()) {
+                    this->point_masses.emplace_back(PointMass(pos, true));
+                } else {
+                    this->point_masses.emplace_back(PointMass(pos, false));
+                }
+                y_pos += y_interval;
+            }
+            x_pos += x_interval;
+        }
+    }
+    // Structural constraints exist between a point mass and the point mass to its left as well as the point mass above it.
+    // Shearing constraints exist between a point mass and the point mass to its diagonal upper left as well as the point mass to its diagonal upper right.
+    // Bending constraints exist between a point mass and the point mass two away to its left as well as the point mass two above it.
+    for (int i = 0; i < this->width; i++) {
+        for (int j = 0; j < this->height; j++) {
+            PointMass p = this->point_masses[i * this->height + j];
+            // structural constraints
+            if (j > 0) { // left
+                PointMass o = this->point_masses[i * this->height + (j - 1)];
+                Spring s = Spring(&o, &p, STRUCTURAL);
+                this->springs.emplace_back(s);
+            }
+            if (i > 0) { // top
+                PointMass o = this->point_masses[(i - 1) * this->height + j];
+                Spring s = Spring(&o, &p, STRUCTURAL);
+                this->springs.emplace_back(s);
+            }
+            // shearing constraints
+            if (i > 0 && j > 0) { // diagonal left
+                PointMass o = this->point_masses[(i - 1) * this->height + (j - 1)];
+                Spring s = Spring(&o, &p, SHEARING);
+                this->springs.emplace_back(s);
+            }
+            if (i > 0 && j < (this->height - 1)) { // diagonal right
+                PointMass o = this->point_masses[(i - 1) * this->height + (j + 1)];
+                Spring s = Spring(&o, &p, SHEARING);
+                this->springs.emplace_back(s);
+            }
+            // bending constraints
+            if (j > 1) { // left
+                PointMass o = this->point_masses[i * this->height + (j - 2)];
+                Spring s = Spring(&o, &p, BENDING);
+                this->springs.emplace_back(s);
+            }
+            if (i > 1) { // top
+                PointMass o = this->point_masses[(i - 2) * this->height + j];
+                Spring s = Spring(&o, &p, BENDING);
+                this->springs.emplace_back(s);
+            }
+        }
+    }
 }
 
 void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParameters *cp,
