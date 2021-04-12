@@ -64,33 +64,26 @@ void Cloth::buildGrid() {
     // 3. Bending constraints exist between a point mass and the point mass two away to its left as well as the point mass two above it.
     for (int i = 0; i < this->num_height_points; i++) {
         for (int j = 0; j < this->num_width_points; j++) {
-            PointMass p = this->point_masses[i * this->num_width_points + j];
             // structural constraints
             if (j > 0) { // left
-                PointMass o = this->point_masses[i * this->num_width_points + (j - 1)];
-                this->springs.emplace_back(Spring(&o, &p, STRUCTURAL));
+                this->springs.emplace_back(Spring(&this->point_masses[i * this->num_width_points + (j - 1)], &this->point_masses[i * this->num_width_points + j], STRUCTURAL));
             }
             if (i > 0) { // top
-                PointMass o = this->point_masses[(i - 1) * this->num_width_points + j];
-                this->springs.emplace_back(Spring(&o, &p, STRUCTURAL));
+                this->springs.emplace_back(Spring(&this->point_masses[(i - 1) * this->num_width_points + j], &this->point_masses[i * this->num_width_points + j], STRUCTURAL));
             }
             // shearing constraints
             if (i > 0 && j > 0) { // diagonal left
-                PointMass o = this->point_masses[(i - 1) * this->num_width_points + (j - 1)];
-                this->springs.emplace_back(Spring(&o, &p, SHEARING));
+                this->springs.emplace_back(Spring(&this->point_masses[(i - 1) * this->num_width_points + (j - 1)], &this->point_masses[i * this->num_width_points + j], SHEARING));
             }
             if (i > 0 && j < (this->num_width_points - 1)) { // diagonal right
-                PointMass o = this->point_masses[(i - 1) * this->num_width_points + (j + 1)];
-                this->springs.emplace_back(Spring(&o, &p, SHEARING));
+                this->springs.emplace_back(Spring(&this->point_masses[(i - 1) * this->num_width_points + (j + 1)], &this->point_masses[i * this->num_width_points + j], SHEARING));
             }
             // bending constraints
             if (j > 1) { // left
-                PointMass o = this->point_masses[i * this->num_width_points + (j - 2)];
-                this->springs.emplace_back(Spring(&o, &p, BENDING));
+                this->springs.emplace_back(Spring(&this->point_masses[i * this->num_width_points + (j - 2)], &this->point_masses[i * this->num_width_points + j], BENDING));
             }
             if (i > 1) { // top
-                PointMass o = this->point_masses[(i - 2) * this->num_width_points + j];
-                this->springs.emplace_back(Spring(&o, &p, BENDING));
+                this->springs.emplace_back(Spring(&this->point_masses[(i - 2) * this->num_width_points + j], &this->point_masses[i * this->num_width_points + j], BENDING));
             }
         }
     }
