@@ -46,7 +46,7 @@ void Cloth::buildGrid() {
 //                double min = -0.001;
 //                double max = -0.001;
 //                double z_pos = (max - min) * ((double) rand() / (double) RAND_MAX) + min;
-                double z_pos = 0;
+                double z_pos = (rand() % 200) / 100000. - .001;
                 pos = Vector3D(j * width_interval, i * height_interval, z_pos);
             }
             for (vector<int> &xy: this->pinned) {
@@ -68,35 +68,29 @@ void Cloth::buildGrid() {
             // structural constraints
             if (j > 0) { // left
                 PointMass o = this->point_masses[i * this->num_width_points + (j - 1)];
-                Spring s = Spring(&o, &p, STRUCTURAL);
-                this->springs.emplace_back(s);
+                this->springs.emplace_back(Spring(&o, &p, STRUCTURAL));
             }
             if (i > 0) { // top
                 PointMass o = this->point_masses[(i - 1) * this->num_width_points + j];
-                Spring s = Spring(&o, &p, STRUCTURAL);
-                this->springs.emplace_back(s);
+                this->springs.emplace_back(Spring(&o, &p, STRUCTURAL));
             }
             // shearing constraints
             if (i > 0 && j > 0) { // diagonal left
                 PointMass o = this->point_masses[(i - 1) * this->num_width_points + (j - 1)];
-                Spring s = Spring(&o, &p, SHEARING);
-                this->springs.emplace_back(s);
+                this->springs.emplace_back(Spring(&o, &p, SHEARING));
             }
             if (i > 0 && j < (this->num_width_points - 1)) { // diagonal right
                 PointMass o = this->point_masses[(i - 1) * this->num_width_points + (j + 1)];
-                Spring s = Spring(&o, &p, SHEARING);
-                this->springs.emplace_back(s);
+                this->springs.emplace_back(Spring(&o, &p, SHEARING));
             }
             // bending constraints
             if (j > 1) { // left
                 PointMass o = this->point_masses[i * this->num_width_points + (j - 2)];
-                Spring s = Spring(&o, &p, BENDING);
-                this->springs.emplace_back(s);
+                this->springs.emplace_back(Spring(&o, &p, BENDING));
             }
             if (i > 1) { // top
                 PointMass o = this->point_masses[(i - 2) * this->num_width_points + j];
-                Spring s = Spring(&o, &p, BENDING);
-                this->springs.emplace_back(s);
+                this->springs.emplace_back(Spring(&o, &p, BENDING));
             }
         }
     }
