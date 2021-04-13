@@ -147,7 +147,18 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
 		}
 	}
 
-	// constrain position updates by fraction of spring length
+	// TODO (Part 4): Handle self-collisions.
+
+
+	// TODO (Part 3): Handle collisions with other primitives.
+	for (int i = 0; i < this->point_masses.size(); i++) {
+		for (CollisionObject* o : *collision_objects) {
+			o->collide(this->point_masses[i]);
+		}
+	}
+
+	// TODO (Part 2): Constrain the changes to be such that the spring does not change
+	// in length more than 10% per timestep [Provot 1995].
 	for (int i = 0; i < this->springs.size(); i++) {
 		Spring* s = &this->springs[i];
 		Vector3D dp = s->pm_b->position - s->pm_a->position;
@@ -167,16 +178,6 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
 			}
 		}
 	}
-
-	// TODO (Part 4): Handle self-collisions.
-
-
-	// TODO (Part 3): Handle collisions with other primitives.
-
-
-	// TODO (Part 2): Constrain the changes to be such that the spring does not change
-	// in length more than 10% per timestep [Provot 1995].
-
 }
 
 void Cloth::build_spatial_map() {
