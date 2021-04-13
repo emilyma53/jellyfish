@@ -184,10 +184,16 @@ void Cloth::build_spatial_map() {
 	for (const auto& entry : map) {
 		delete(entry.second);
 	}
-	map.clear();
-
-	// TODO (Part 4): Build a spatial map out of all of the point masses.
-
+	this->map.clear();
+    // TODO (Part 4): Build a spatial map out of all of the point masses.
+	for (PointMass &p : this->point_masses) {
+	    float key = hash_position(p.position);
+        if (this->map.find(key) == this->map.end()) {
+            auto *bucket = new vector<PointMass *>();
+            this->map[key] = bucket;
+        }
+        this->map[key]->push_back(&p);
+    }
 }
 
 void Cloth::self_collide(PointMass& pm, double simulation_steps) {
