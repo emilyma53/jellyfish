@@ -65,26 +65,34 @@ void Cloth::buildGrid() {
 	// 3. Bending constraints exist between a point mass and the point mass two away to its left as well as the point mass two above it.
 	for (int i = 0; i < this->num_height_points; i++) {
 		for (int j = 0; j < this->num_width_points; j++) {
+			PointMass* p = &this->point_masses[i * this->num_width_points + j];
+			PointMass* o;
 			// structural constraints
 			if (j > 0) { // left
-				this->springs.emplace_back(Spring(&this->point_masses[i * this->num_width_points + (j - 1)], &this->point_masses[i * this->num_width_points + j], STRUCTURAL));
+				o = &this->point_masses[i * this->num_width_points + (j - 1)];
+				this->springs.emplace_back(Spring(o, p, STRUCTURAL));
 			}
 			if (i > 0) { // top
-				this->springs.emplace_back(Spring(&this->point_masses[(i - 1) * this->num_width_points + j], &this->point_masses[i * this->num_width_points + j], STRUCTURAL));
+				o = &this->point_masses[(i - 1) * this->num_width_points + j];
+				this->springs.emplace_back(Spring(o, p, STRUCTURAL));
 			}
 			// shearing constraints
 			if (i > 0 && j > 0) { // diagonal left
-				this->springs.emplace_back(Spring(&this->point_masses[(i - 1) * this->num_width_points + (j - 1)], &this->point_masses[i * this->num_width_points + j], SHEARING));
+				o = &this->point_masses[(i - 1) * this->num_width_points + (j - 1)];
+				this->springs.emplace_back(Spring(o, p, SHEARING));
 			}
 			if (i > 0 && j < (this->num_width_points - 1)) { // diagonal right
-				this->springs.emplace_back(Spring(&this->point_masses[(i - 1) * this->num_width_points + (j + 1)], &this->point_masses[i * this->num_width_points + j], SHEARING));
+				o = &this->point_masses[(i - 1) * this->num_width_points + (j + 1)];
+				this->springs.emplace_back(Spring(o, p, SHEARING));
 			}
 			// bending constraints
 			if (j > 1) { // left
-				this->springs.emplace_back(Spring(&this->point_masses[i * this->num_width_points + (j - 2)], &this->point_masses[i * this->num_width_points + j], BENDING));
+				o = &this->point_masses[i * this->num_width_points + (j - 2)];
+				this->springs.emplace_back(Spring(o, p, BENDING));
 			}
 			if (i > 1) { // top
-				this->springs.emplace_back(Spring(&this->point_masses[(i - 2) * this->num_width_points + j], &this->point_masses[i * this->num_width_points + j], BENDING));
+				o = &this->point_masses[(i - 2) * this->num_width_points + j];
+				this->springs.emplace_back(Spring(o, p, BENDING));
 			}
 		}
 	}
@@ -99,59 +107,63 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
 	// TODO (Part 2): Compute total force acting on each point mass.
 	// sum external forces on each mass
 	for (int i = 0; i < this->point_masses.size(); i++) {
-		this->point_masses[i].forces = Vector3D();
+		PointMass* pm = &this->point_masses[i];
+		pm->forces = Vector3D();
 		for (const Vector3D &a : external_accelerations) {
-			this->point_masses[i].forces += mass * a;
+			pm->forces += mass * a;
 		}
 	}
 
 	// apply spring forces to each mass
 	for (int i = 0; i < this->springs.size(); i++) {
-		if (this->springs[i].spring_type == STRUCTURAL && cp->enable_structural_constraints) {
-			Vector3D dp = this->springs[i].pm_b->position - this->springs[i].pm_a->position;
-			Vector3D fs = cp->ks * (dp.norm() - this->springs[i].rest_length) * dp.unit();
-			this->springs[i].pm_a->forces += fs;
-			this->springs[i].pm_b->forces -= fs;
+		Spring* s = &this->springs[i];
+		if (s->spring_type == STRUCTURAL && cp->enable_structural_constraints) {
+			Vector3D dp = s->pm_b->position - s->pm_a->position;
+			Vector3D fs = cp->ks * (dp.norm() - s->rest_length) * dp.unit();
+			s->pm_a->forces += fs;
+			s->pm_b->forces -= fs;
 		}
-		else if (this->springs[i].spring_type == SHEARING && cp->enable_shearing_constraints) {
-			Vector3D dp = this->springs[i].pm_b->position - this->springs[i].pm_a->position;
-			Vector3D fs = cp->ks * (dp.norm() - this->springs[i].rest_length) * dp.unit();
-			this->springs[i].pm_a->forces += fs;
-			this->springs[i].pm_b->forces -= fs;
+		else if (s->spring_type == SHEARING && cp->enable_shearing_constraints) {
+			Vector3D dp = s->pm_b->position - s->pm_a->position;
+			Vector3D fs = cp->ks * (dp.norm() - s->rest_length) * dp.unit();
+			s->pm_a->forces += fs;
+			s->pm_b->forces -= fs;
 		}
-		else if (this->springs[i].spring_type == BENDING && cp->enable_bending_constraints) {
-			Vector3D dp = this->springs[i].pm_b->position - this->springs[i].pm_a->position;
-			Vector3D fs = 0.2 * cp->ks * (dp.norm() - this->springs[i].rest_length) * dp.unit();
-			this->springs[i].pm_a->forces += fs;
-			this->springs[i].pm_b->forces -= fs;
+		else if (s->spring_type == BENDING && cp->enable_bending_constraints) {
+			Vector3D dp = s->pm_b->position - s->pm_a->position;
+			Vector3D fs = 0.2 * cp->ks * (dp.norm() - s->rest_length) * dp.unit();
+			s->pm_a->forces += fs;
+			s->pm_b->forces -= fs;
 		}
 	}
 
 	// TODO (Part 2): Use Verlet integration to compute new point mass positions
 	for (int i = 0; i < this->point_masses.size(); i++) {
 		if (!this->point_masses[i].pinned) {
-			Vector3D dxdt = (1 - cp->damping / 100.) * (this->point_masses[i].position - this->point_masses[i].last_position) + this->point_masses[i].forces / mass * delta_t * delta_t;
-			this->point_masses[i].last_position = this->point_masses[i].position;
-			this->point_masses[i].position += dxdt;
+			PointMass* pm = &this->point_masses[i];
+			Vector3D dxdt = (1 - cp->damping / 100.) * (pm->position - pm->last_position) + pm->forces / mass * delta_t * delta_t;
+			pm->last_position = pm->position;
+			pm->position += dxdt;
 		}
 	}
 
 	// constrain position updates by fraction of spring length
 	for (int i = 0; i < this->springs.size(); i++) {
-		Vector3D dp = this->springs[i].pm_b->position - this->springs[i].pm_a->position;
+		Spring* s = &this->springs[i];
+		Vector3D dp = s->pm_b->position - s->pm_a->position;
 		double length = dp.norm();
-		if (length > this->springs[i].rest_length * 1.1) {
-			Vector3D maxspring = this->springs[i].rest_length * 1.1 * dp.unit();
-			if (this->springs[i].pm_a->pinned) {
-				this->springs[i].pm_b->position = this->springs[i].pm_a->position + maxspring;
+		if (length > s->rest_length * 1.1) {
+			Vector3D maxspring = s->rest_length * 1.1 * dp.unit();
+			if (s->pm_a->pinned) {
+				s->pm_b->position = s->pm_a->position + maxspring;
 			}
-			else if (this->springs[i].pm_b->pinned) {
-				this->springs[i].pm_a->position = this->springs[i].pm_b->position - maxspring;
+			else if (s->pm_b->pinned) {
+				s->pm_a->position = s->pm_b->position - maxspring;
 			}
 			else {
-				Vector3D midpt = (this->springs[i].pm_a->position + this->springs[i].pm_b->position) / 2;
-				this->springs[i].pm_a->position = midpt - maxspring / 2;
-				this->springs[i].pm_b->position = midpt + maxspring / 2;
+				Vector3D midpt = (s->pm_a->position + s->pm_b->position) / 2;
+				s->pm_a->position = midpt - maxspring / 2;
+				s->pm_b->position = midpt + maxspring / 2;
 			}
 		}
 	}
