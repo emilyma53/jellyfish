@@ -206,8 +206,7 @@ void Cloth::self_collide(PointMass& pm, double simulation_steps) {
 		if (&pm != candidate) {
 			Vector3D dist = pm.position - candidate->position;
 			if (dist.norm() < 2 * this->thickness) {
-				Vector3D corpos = 2 * this->thickness * dist.unit() + candidate->position;
-				Vector3D correct = corpos - pm.position;
+				Vector3D correct = (2 * this->thickness - dist.norm()) * dist.unit();
 				avgcorrect += correct;
 				count += 1;
 			}
