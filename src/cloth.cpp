@@ -203,7 +203,7 @@ void Cloth::self_collide(PointMass& pm, double simulation_steps) {
 	vector<PointMass*>* bucket = this->map[hash_position(pm.position)];
 	int count = 0;
 	for (PointMass* candidate : *bucket) {
-		if (&pm != candidate) {
+		if (!(pm.position == candidate->position)) {
 			Vector3D dist = pm.position - candidate->position;
 			if (dist.norm() < 2 * this->thickness) {
 				Vector3D correct = (2 * this->thickness - dist.norm()) * dist.unit();
