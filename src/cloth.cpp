@@ -197,8 +197,13 @@ void Cloth::self_collide(PointMass& pm, double simulation_steps) {
 
 float Cloth::hash_position(Vector3D pos) {
 	// TODO (Part 4): Hash a 3D position into a unique float identifier that represents membership in some 3D box volume.
-
-	return 0.f;
+    float w = 3.0f * width / num_width_points;
+    int x = floor(pos.x / w);
+    float h = 3.0f * height / num_height_points;
+    int y = floor(pos.y / h);
+    float t = std::max(w, h);
+    int z = floor(pos.z / t);
+    return x << 10 ^ y << 5 ^ z;
 }
 
 ///////////////////////////////////////////////////////
