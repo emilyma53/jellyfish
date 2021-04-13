@@ -148,7 +148,9 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
 	}
 
 	// TODO (Part 4): Handle self-collisions.
-
+	for (int i = 0; i < this->point_masses.size(); i++) {
+		self_collide(this->point_masses[i], simulation_steps);
+	}
 
 	// TODO (Part 3): Handle collisions with other primitives.
 	for (int i = 0; i < this->point_masses.size(); i++) {
@@ -199,6 +201,19 @@ void Cloth::build_spatial_map() {
 void Cloth::self_collide(PointMass& pm, double simulation_steps) {
 	// TODO (Part 4): Handle self-collision for a given point mass.
 
+	Vector3D avgcorrect = Vector3D();
+	vector<PointMass*>* bucket = this->map[hash_position(pm.position)];
+	for (PointMass* candidate : *bucket) {
+		if (&pm != candidate) {
+			Vector3D dist = pm.position - candidate->position;
+			if (dist.norm() < 2 * this->thickness) {
+				Vector3D corpos = 2 * this->thickness * dist.unit() + candidate->position;
+				Vector3D correct = corpos - pm.position;
+				avgcorrect += correct;
+			}
+		}
+	}
+	pm.position += avgcorrect / simulation_steps;
 }
 
 float Cloth::hash_position(Vector3D pos) {
