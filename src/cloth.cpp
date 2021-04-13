@@ -44,10 +44,7 @@ void Cloth::buildGrid() {
 				pos = Vector3D(j * width_interval, 1.0f, i * height_interval);
 			}
 			else {
-				//                double min = -0.001;
-				//                double max = -0.001;
-				//                double z_pos = (max - min) * ((double) rand() / (double) RAND_MAX) + min;
-				double z_pos = (rand() % 200) / 100000. - .001;
+				float z_pos = (rand() % 200) / 100000.0f - 0.001f;
 				pos = Vector3D(j * width_interval, i * height_interval, z_pos);
 			}
 			for (vector<int>& xy : this->pinned) {
@@ -204,6 +201,7 @@ void Cloth::self_collide(PointMass& pm, double simulation_steps) {
 
 	Vector3D avgcorrect = Vector3D();
 	vector<PointMass*>* bucket = this->map[hash_position(pm.position)];
+	int count = 0;
 	for (PointMass* candidate : *bucket) {
 		if (&pm != candidate) {
 			Vector3D dist = pm.position - candidate->position;
@@ -211,9 +209,11 @@ void Cloth::self_collide(PointMass& pm, double simulation_steps) {
 				Vector3D corpos = 2 * this->thickness * dist.unit() + candidate->position;
 				Vector3D correct = corpos - pm.position;
 				avgcorrect += correct;
+				count += 1;
 			}
 		}
 	}
+	avgcorrect /= max(count, 1);
 	pm.position += avgcorrect / simulation_steps;
 }
 
