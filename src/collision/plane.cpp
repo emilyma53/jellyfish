@@ -12,21 +12,16 @@ using namespace CGL;
 
 void Plane::collide(PointMass& pm) {
 	// TODO (Part 3): Handle collisions with planes.
-	float normdist = dot(normal.unit(), pm.position - point);
-	float lastnormdist = dot(normal.unit(), pm.last_position - point);
+	double normdist = dot(pm.position - this->point, this->normal);
+	double lastnormdist = dot(pm.last_position - this->point, this->normal);
 	if (lastnormdist == 0 && normdist >= 0) {
 		return;
 	}
 	if (normdist * lastnormdist <= 0) {
-		Vector3D tan = pm.position - normdist * normal.unit();
-		Vector3D correct = tan - pm.last_position;
-		if (lastnormdist == 0) {
-			correct += SURFACE_OFFSET * normal.unit();
-		}
-		else {
-			correct = (correct.norm() - SURFACE_OFFSET) * correct.unit();
-		}
-		pm.position = (1 - friction) * correct + pm.last_position;
+	    double tan = -dot(pm.position - this->point, this->normal);
+        Vector3D correct = (this->normal * (tan + SURFACE_OFFSET));
+        correct += pm.position - pm.last_position;
+        pm.position = (1 - friction) * correct + pm.last_position;
 	}
 }
 
