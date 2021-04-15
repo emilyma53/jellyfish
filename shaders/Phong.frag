@@ -13,9 +13,25 @@ out vec4 out_color;
 
 void main() {
   // YOUR CODE HERE
+  float ka = 0.1;
+  float ks = 0.5;
+  int p = 100;
+  vec3 kd = vec3(u_color);
+  vec3 ia = vec3(1.0);
+
+  vec3 out_amb = ka * ia;
+
+  vec3 l = u_light_pos - vec3(v_position);
+  float r = length(l);
+  l = normalize(l);
+
+  vec3 out_diff = kd * u_light_intensity / (r * r) * max(0.0, dot(normalize(vec3(v_normal)), l));
+
+  vec3 v = normalize(u_cam_pos - vec3(v_position));
+  vec3 h = normalize(v + l);
+
+  vec3 out_spec = ks * u_light_intensity / (r * r) * pow(max(0.0, dot(normalize(vec3(v_normal)), h)), p);
   
-  // (Placeholder code. You will want to replace it.)
-  out_color = (vec4(1, 1, 1, 0) + v_normal) / 2;
-  out_color.a = 1;
+  out_color = vec4(out_amb + out_diff + out_spec, 1);
 }
 

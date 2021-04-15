@@ -14,6 +14,10 @@ out vec4 out_color;
 
 void main() {
   // YOUR CODE HERE
+
+  // doesn't work
+  // why
+  // out_color = texture(u_texture_l, v_uv);
   
   // (Placeholder code. You will want to replace it.)
   out_color = (vec4(1, 1, 1, 0) + v_normal) / 2;
