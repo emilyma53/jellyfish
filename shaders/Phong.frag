@@ -24,13 +24,14 @@ void main() {
   vec3 l = u_light_pos - vec3(v_position);
   float r = length(l);
   l = normalize(l);
+  vec3 norm3 = normalize(vec3(v_normal));
 
-  vec3 out_diff = kd * u_light_intensity / (r * r) * max(0.0, dot(normalize(vec3(v_normal)), l));
+  vec3 out_diff = kd * u_light_intensity / (r * r) * max(0.0, dot(norm3, l));
 
   vec3 v = normalize(u_cam_pos - vec3(v_position));
   vec3 h = normalize(v + l);
 
-  vec3 out_spec = ks * u_light_intensity / (r * r) * pow(max(0.0, dot(normalize(vec3(v_normal)), h)), p);
+  vec3 out_spec = ks * u_light_intensity / (r * r) * pow(max(0.0, dot(norm3, h)), p);
   
   out_color = vec4(out_amb + out_diff + out_spec, 1);
 }

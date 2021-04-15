@@ -26,10 +26,12 @@ float h(vec2 uv) {
 
 void main() {
   // YOUR CODE HERE
-  mat3 TBN = mat3(vec3(v_tangent), cross(vec3(v_normal), vec3(v_tangent)), vec3(v_normal));
+  vec3 tan3 = normalize(vec3(v_tangent));
+  vec3 norm3 = normalize(vec3(v_normal));
+  mat3 TBN = mat3(tan3, cross(norm3, tan3), norm3);
 
   // i am literally making up syntax i have no clue
-  // you were only missing one parenthesis lol the syntax is fine
+  // you were only missing one parenthesis lol the syntax is good
 
   vec2 u1w_v = vec2(v_uv[0] + (1.0 / u_texture_2_size[0]), v_uv[1]);
   vec2 u_v1h = vec2(v_uv[0], v_uv[1] + (1.0 / u_texture_2_size[1]));
@@ -39,10 +41,26 @@ void main() {
   vec3 n_o = vec3(-du, -dv, 1);
   vec4 bump_normal = vec4(TBN * n_o, 1);
 
-  // Still need color, using Diffuse
+  // Still need color, using Phong
+  float ka = 0.1;
+  float ks = 0.5;
+  int p = 100;
+  vec3 kd = vec3(u_color);
+  vec3 ia = vec3(1.0);
+
+  vec3 out_amb = ka * ia;
+
   vec3 l = u_light_pos - vec3(v_position);
   float r = length(l);
   l = normalize(l);
+  vec3 normb = normalize(vec3(bump_normal));
 
-  out_color = vec4(u_light_intensity / (r * r) * max(0.0, dot(normalize(vec3(bump_normal)), l)), 1);
+  vec3 out_diff = kd * u_light_intensity / (r * r) * max(0.0, dot(normb, l));
+
+  vec3 v = normalize(u_cam_pos - vec3(v_position));
+  vec3 h = normalize(v + l);
+
+  vec3 out_spec = ks * u_light_intensity / (r * r) * pow(max(0.0, dot(normb, h)), p);
+  
+  out_color = vec4(out_amb + out_diff + out_spec, 1);
 }
