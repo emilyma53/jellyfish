@@ -20,7 +20,6 @@ in vec2 v_uv;
 out vec4 out_color;
 
 float h(vec2 uv) {
-  // You may want to use this helper function...
   return texture(u_texture_2, uv).r;
 }
 
@@ -50,14 +49,14 @@ void main() {
   vec3 l = u_light_pos - vec3(v_position);
   float r = length(l);
   l = normalize(l);
-  vec3 normb = normalize(vec3(bump_normal));
+  vec3 nb = normalize(vec3(bump_normal));
 
-  vec3 out_diff = kd * u_light_intensity / (r * r) * max(0.0, dot(normb, l));
+  vec3 out_diff = kd * u_light_intensity / (r * r) * max(0.0, dot(nb, l));
 
   vec3 v = normalize(u_cam_pos - vec3(v_position));
   vec3 h = normalize(v + l);
 
-  vec3 out_spec = ks * u_light_intensity / (r * r) * pow(max(0.0, dot(normb, h)), p);
+  vec3 out_spec = ks * u_light_intensity / (r * r) * pow(max(0.0, dot(nb, h)), p);
   
   out_color = vec4(out_amb + out_diff + out_spec, 1);
 }

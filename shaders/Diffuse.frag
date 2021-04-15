@@ -29,7 +29,7 @@ void main() {
   vec3 l = u_light_pos - vec3(v_position);
   float r = length(l);
   l = normalize(l);
-  vec3 norm3 = normalize(vec3(v_normal));
+  vec3 n3 = normalize(vec3(v_normal));
 
-  out_color = vec4(u_light_intensity / (r * r) * max(0.0, dot(norm3, l)), 1);
+  out_color = vec4(u_light_intensity / (r * r) * max(0.0, dot(n3, l)), 1);
 }
