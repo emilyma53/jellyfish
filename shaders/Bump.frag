@@ -26,14 +26,23 @@ float h(vec2 uv) {
 
 void main() {
   // YOUR CODE HERE
+  mat3 TBN = mat3(vec3(v_tangent), cross(vec3(v_normal), vec3(v_tangent)), vec3(v_normal));
+
   // i am literally making up syntax i have no clue
-  vec2 u1w_v = vec2(v_uv[0] + (1 / u_texture_2_size[0]), v_uv[1]);
-  vec2 u_v1h = vec2(v_uv[0], v_uv[1] + (1 / u_texture_2_size[1]);
+  // you were only missing one parenthesis lol the syntax is fine
+
+  vec2 u1w_v = vec2(v_uv[0] + (1.0 / u_texture_2_size[0]), v_uv[1]);
+  vec2 u_v1h = vec2(v_uv[0], v_uv[1] + (1.0 / u_texture_2_size[1]));
   float du = (h(u1w_v) - h(v_uv)) * u_normal_scaling * u_height_scaling;
   float dv = (h(u_v1h) - h(v_uv)) * u_normal_scaling * u_height_scaling;
   
-  // (Placeholder code. You will want to replace it.)
-  out_color = (vec4(1, 1, 1, 0) + v_normal) / 2;
-  out_color.a = 1;
-}
+  vec3 n_o = vec3(-du, -dv, 1);
+  vec4 bump_normal = vec4(TBN * n_o, 1);
 
+  // Still need color, using Diffuse
+  vec3 l = u_light_pos - vec3(v_position);
+  float r = length(l);
+  l = normalize(l);
+
+  out_color = vec4(u_light_intensity / (r * r) * max(0.0, dot(normalize(vec3(bump_normal)), l)), 1);
+}
