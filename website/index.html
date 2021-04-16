@@ -1,50 +1,139 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-    <script type="text/javascript" id="MathJax-script" async
-            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
-    </script>
-    <link href="//cdn.jsdelivr.net/npm/featherlight@1.7.14/release/featherlight.min.css" type="text/css" rel="stylesheet" />
-    <link href="//cdn.jsdelivr.net/npm/featherlight@1.7.14/release/featherlight.gallery.min.css" type="text/css" rel="stylesheet" />
-    <style>
-        body {
-            padding: 100px;
-            width: 1000px;
-            margin: auto;
-            text-align: left;
-            font-weight: 300;
-            font-family: 'Open Sans', sans-serif;
-            color: #121212;
-            line-height: 1.5;
-        }
-        div.padded {
-            padding-top: 0px;
-            padding-right: 100px;
-            padding-bottom: 0.25in;
-            padding-left: 100px;
-        }
-    </style>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+<title>CS 184: ClothSim</title>
+<script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<link href="//cdn.jsdelivr.net/npm/featherlight@1.7.14/release/featherlight.min.css" type="text/css" rel="stylesheet" />
+<link href="//cdn.jsdelivr.net/npm/featherlight@1.7.14/release/featherlight.gallery.min.css" type="text/css" rel="stylesheet" />
+<style>
+    body {
+        padding: 100px;
+        width: 1000px;
+        margin: auto;
+        text-align: left;
+        font-weight: 300;
+        font-family: 'Open Sans', sans-serif;
+        color: #121212;
+        line-height: 1.5;
+    }
+    div.padded {
+        padding-top: 0px;
+        padding-right: 100px;
+        padding-bottom: 0.25in;
+        padding-left: 100px;
+    }
+</style>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="style.css" media="screen" />
 </head>
+
 <body>
 
 <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2021</h1>
 <h1 align="middle">Project 4: Cloth Simulator</h1>
 <h2 align="middle">Lindsey Guan & Simon Yei</h2>
 
-<br><br>
-
-<div>
-
 <h2 align="middle">Overview</h2>
 <p>Give a high-level overview of what you implemented in this project. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the project.</p>
 <h2 align="middle">Part I: Masses and springs</h2>
+
+<div align="center">
+    <p align="middle">Click to enlarge images.</p>
+    <table style="width=100%">
+        <th colspan="2" align="middle">all constraints</th>
+        <tr>
+            <td align="middle">
+                <a class="gallery" href="images/part1_all_large.png"><img src="images/part1_all_large.png" width="400px"/></a>
+            </td>
+            <td align="middle">
+                <a class="gallery" href="images/part1_all.png"><img src="images/part1_all.png" width="400px"/></a>
+            </td>
+        </tr>
+        <th colspan="2" align="middle">no shearing constraints</th>
+        <tr>
+            <td align="middle">
+                <a class="gallery" href="images/part1_no_shearing_large.png"><img src="images/part1_no_shearing_large.png" width="400px"/></a>
+            </td>
+            <td align="middle">
+                <a class="gallery" href="images/part1_no_shearing.png"><img src="images/part1_no_shearing.png" width="400px"/></a>
+            </td>
+        </tr>
+        <th colspan="2" align="middle">only shearing constraints</th>
+        <tr>
+            <td align="middle">
+                <a class="gallery" href="images/part1_only_shearing_large.png"><img src="images/part1_only_shearing_large.png" width="400px"/></a>
+            </td>
+            <td align="middle">
+                <a class="gallery" href="images/part1_only_shearing.png"><img src="images/part1_only_shearing.png" width="400px"/></a>
+            </td>
+        </tr>
+    </table>
+</div>
+
 <h2 align="middle">Part II: Simulation via numerical integration</h2>
+
+<div align="center">
+    <table style="width=100%">
+        <tr>
+            <td colspan="2" align="middle">
+                <a class="gallery" href="images/part2_normal.png"><img src="images/part2_normal.png" width="400px"/></a>
+                <figcaption align="middle">default settings</figcaption>
+            </td>
+        </tr>
+        <tr>
+            <td align="middle">
+                <a class="gallery" href="images/part2_not_dense.png"><img src="images/part2_not_dense.png" width="400px"/></a>
+                <figcaption align="middle">low density</figcaption>
+            </td>
+            <td align="middle">
+                <a class="gallery" href="images/part2_dense.png"><img src="images/part2_dense.png" width="400px"/></a>
+                <figcaption align="middle">high density</figcaption>
+            </td>
+        </tr>
+        <tr>
+            <td align="middle">
+                <a class="gallery" href="images/part2_low_ks.png"><img src="images/part2_low_ks.png" width="400px"/></a>
+                <figcaption align="middle">low spring constant</figcaption>
+            </td>
+            <td align="middle">
+                <a class="gallery" href="images/part2_high_ks.png"><img src="images/part2_high_ks.png" width="400px"/></a>
+                <figcaption align="middle">high spring constant</figcaption>
+            </td>
+        </tr>
+        <tr>
+        <td align="middle">
+            <a class="gallery" href="images/part2_low_damping.png"><img src="images/part2_low_damping.png" width="400px"/></a>
+            <figcaption align="middle">low damping</figcaption>
+        </td>
+        <td align="middle">
+            <a class="gallery" href="images/part2_high_damping.png"><img src="images/part2_high_damping.png" width="400px"/></a>
+            <figcaption align="middle">high damping</figcaption>
+        </td>
+        </tr>
+    </table>
+</div>
+
 <h2 align="middle">Part II: Handling collisions with other objects</h2>
 <h2 align="middle">Part IV: Handling self-collisions</h2>
 <h2 align="middle">Part V: Shaders</h2>
 
+<script src="//code.jquery.com/jquery-latest.js"></script>
+<script src="//cdn.jsdelivr.net/npm/featherlight@1.7.14/release/featherlight.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="//cdn.jsdelivr.net/npm/featherlight@1.7.14/release/featherlight.gallery.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/detect_swipe/2.1.1/jquery.detect_swipe.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.gallery').featherlightGallery();
+    });
 
-</>
+    $('a.gallery').featherlightGallery( {
+        previousIcon: '&#9664;',     /* Code that is used as previous icon */
+        nextIcon: '&#9654;',         /* Code that is used as next icon */
+        galleryFadeIn: 100,          /* fadeIn speed when slide is loaded */
+        galleryFadeOut: 300          /* fadeOut speed before slide is loaded */
+    });
+</script>
+</body>
 </html>
