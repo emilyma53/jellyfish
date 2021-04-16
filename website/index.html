@@ -36,7 +36,28 @@
 <h2 align="middle">Lindsey Guan & Simon Yei</h2>
 
 <h2 align="middle">Overview</h2>
-<p>Give a high-level overview of what you implemented in this project. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the project.</p>
+<p>
+    Project 4 tasked us with implementing a cloth model so that we can simulate forces on a cloth and how its movement from one
+    timestep to the next. Specifically, we modeled our cloth as a set of point masses connected by springs. We implemented
+    support for colliding our cloth with planes and spheres, and we wrote a few shaders to create interesting lighting and
+    material effects.
+    <br><br>
+    For simulating movement, we applied Newton's Laws and Hooke's Law to simulate external forces and spring forces on
+    each point mass. We calculated the location of each point mass at each timestep using Verlet integration, which
+    gives us an accurate estimate of a point mass's new position based on its current position, velocity, acceleration,
+    and a damping constant. Additionally, density and spring constant parameters allow us to simulate different cloths with different behaviors.
+    <br><br>
+    We handle collisions by ensuring that when we update a point mass's position, it does not "cross" the surface of an object.
+    This allowed us to create the simulations below where we see the cloth gently resting on a plane or a sphere. An extension of this approach
+    helped us figure out how to support self-collisions so that the cloth won't clip through itself.
+    <br><br>
+    Lastly, we wrote shaders to support diffuse, Blinn-Phong, bump, displacement, texture-mapped, and mirror effects
+    for our cloth and the objects in each scene. Using GLSL took a bit of effort and resulted in a few sneaky typos
+    since our IDEs can't help us write code in .frag and .vert files, but we found GLSL's built-in functions useful for
+    vector operations and reflecting a vector over a normal.
+    <br><br>
+</p>
+
 <h2 align="middle">Part I: Masses and springs</h2>
 
 <p>
@@ -352,6 +373,14 @@
             </td>
         </tr>
     </table>
+
+<h2 align="middle">Collaboration Note</h2>
+    <p align="left">
+        Our collaboration process involved regular communication through Facebook Messenger to discuss
+        potential implementations and to share debugging strategies. We took advantage of Git so we could program and
+        merge code together, and we learned that asking and answering questions with each other is a great way to learn
+        and squish those pesky bugs.
+    </p>
 </div>
 
 <script src="//code.jquery.com/jquery-latest.js"></script>
