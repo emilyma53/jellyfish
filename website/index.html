@@ -36,13 +36,42 @@
 <h2 align="middle">Lindsey Guan & Simon Yei</h2>
 
 <h2 align="middle">Overview</h2>
-<p>Give a high-level overview of what you implemented in this project. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the project.</p>
+<p>
+    Project 4 tasked us with implementing a cloth model so that we can simulate forces on a cloth and how its movement from one
+    timestep to the next. Specifically, we modeled our cloth as a set of point masses connected by springs. We implemented
+    support for colliding our cloth with planes and spheres, and we wrote a few shaders to create interesting lighting and
+    material effects.
+    <br><br>
+    For simulating movement, we applied Newton's Laws and Hooke's Law to simulate external forces and spring forces on
+    each point mass. We calculated the location of each point mass at each timestep using Verlet integration, which
+    gives us an accurate estimate of a point mass's new position based on its current position, velocity, acceleration,
+    and a damping constant. Additionally, density and spring constant parameters allow us to simulate different cloths with different behaviors.
+    <br><br>
+    We handle collisions by ensuring that when we update a point mass's position, it does not "cross" the surface of an object.
+    This allowed us to create the simulations below where we see the cloth gently resting on a plane or a sphere. An extension of this approach
+    helped us figure out how to support self-collisions so that the cloth won't clip through itself.
+    <br><br>
+    Lastly, we wrote shaders to support diffuse, Blinn-Phong, bump, displacement, texture-mapped, and mirror effects
+    for our cloth and the objects in each scene. Using GLSL took a bit of effort and resulted in a few sneaky typos
+    since our IDEs can't help us write code in .frag and .vert files, but we found GLSL's built-in functions useful for
+    vector operations and reflecting a vector over a normal.
+    <br><br>
+</p>
+
 <h2 align="middle">Part I: Masses and springs</h2>
 
+<p>
+        Our cloth model is represented by a set of point masses and springs. The cloth consists of a set of evenly-spaced point
+    masses and each point mass is connected to other masses with springs. We have three types of springs, each representing a
+    different kind of constraint between the masses: structural, shearing, and bending.
+    <br><br>
+        Below, we show our cloth in wireframe mode with point masses and all constraints, then with no shearing constraints,
+    and lastly, with only shearing constraints.
+</p>
 <div align="center">
     <p align="middle">Click to enlarge images.</p>
     <table style="width=100%">
-        <th colspan="2" align="middle">all constraints</th>
+        <th colspan="2" align="middle">All constraints</th>
         <tr>
             <td align="middle">
                 <a class="gallery" href="images/part1_all_large.png"><img src="images/part1_all_large.png" width="400px"/></a>
@@ -51,7 +80,7 @@
                 <a class="gallery" href="images/part1_all.png"><img src="images/part1_all.png" width="400px"/></a>
             </td>
         </tr>
-        <th colspan="2" align="middle">no shearing constraints</th>
+        <th colspan="2" align="middle">No shearing constraints</th>
         <tr>
             <td align="middle">
                 <a class="gallery" href="images/part1_no_shearing_large.png"><img src="images/part1_no_shearing_large.png" width="400px"/></a>
@@ -60,7 +89,7 @@
                 <a class="gallery" href="images/part1_no_shearing.png"><img src="images/part1_no_shearing.png" width="400px"/></a>
             </td>
         </tr>
-        <th colspan="2" align="middle">only shearing constraints</th>
+        <th colspan="2" align="middle">Only shearing constraints</th>
         <tr>
             <td align="middle">
                 <a class="gallery" href="images/part1_only_shearing_large.png"><img src="images/part1_only_shearing_large.png" width="400px"/></a>
@@ -74,48 +103,92 @@
 
 <h2 align="middle">Part II: Simulation via numerical integration</h2>
 
+<p>
+    In order to apply forces on our cloth model, we computed the total force acting on each point mass due to spring
+    forces and gravity. We then use Verlet integration, which uses the current position,
+    velocity, total acceleration, and a damping constant to update each point mass's position. Damping aims to
+    simulate loss of energy due to friction and heat loss by slightly down-scaling velocity. Lastly, we prevent spring
+    deformation by ensuring that a spring's length is at most 10% greater than its rest length.
+    <br><br>
+    Here, we show the pinned cloth from <code>pinned4.json</code> at resting state with the default parameters.
+</p>
+
 <div align="center">
     <table style="width=100%">
         <tr>
             <td colspan="2" align="middle">
-                <a class="gallery" href="images/part2_normal.png"><img src="images/part2_normal.png" width="400px"/></a>
-                <figcaption align="middle">default settings</figcaption>
+                <a class="gallery" href="images/part2_default.png"><img src="images/part2_default.png" width="400px"/></a>
             </td>
         </tr>
+    </table>
+    <p align="left">
+        When we lower the density of the cloth while the simulation plays, we see the cloth billow a little bit and develop
+        a softer, more wrinkly behavior. However, there isn't much of a noticeable difference between the default density and
+        lower density simulations when we play it from the beginning.
+        When we increase the density of the cloth while the simulation plays, we see the cloth sink a bit and the bottom of the cloth
+        stretch a bit farther away from the pinned areas.
+    </p>
+    <table style="width=100%">
         <tr>
             <td align="middle">
-                <a class="gallery" href="images/part2_not_dense.png"><img src="images/part2_not_dense.png" width="400px"/></a>
-                <figcaption align="middle">low density</figcaption>
+                <a class="gallery" href="images/part2_low_density.png"><img src="images/part2_low_density.png" width="400px"/></a>
+                <figcaption align="middle">low density (1 g/cm^2)</figcaption>
             </td>
             <td align="middle">
-                <a class="gallery" href="images/part2_dense.png"><img src="images/part2_dense.png" width="400px"/></a>
-                <figcaption align="middle">high density</figcaption>
+                <a class="gallery" href="images/part2_high_density.png"><img src="images/part2_high_density.png" width="400px"/></a>
+                <figcaption align="middle">high density (1000 g/cm^2)</figcaption>
             </td>
         </tr>
+    </table>
+    <p align="left">
+        When we lower the spring constant of the cloth while the simulation plays, we see the cloth wiggle a bit and then
+        quickly settle into a resting state.
+        When we increase the spring constant of the cloth while the simulation plays, we see the cloth dramatically billow up
+        and down and then eventually reach a resting state.
+    </p>
+    <table style="width=100%">
         <tr>
             <td align="middle">
                 <a class="gallery" href="images/part2_low_ks.png"><img src="images/part2_low_ks.png" width="400px"/></a>
-                <figcaption align="middle">low spring constant</figcaption>
+                <figcaption align="middle">low spring constant (ks = 5 N/m)</figcaption>
             </td>
             <td align="middle">
                 <a class="gallery" href="images/part2_high_ks.png"><img src="images/part2_high_ks.png" width="400px"/></a>
-                <figcaption align="middle">high spring constant</figcaption>
+                <figcaption align="middle">high spring constant (ks = 50000 N/m)</figcaption>
             </td>
         </tr>
+    </table>
+    <p align="left">
+        Lastly, when we lower the damping of the cloth, we see the cloth bounce and ripple after it falls.
+        When we increase the damping of the cloth, we see the cloth smoothly settle into resting state with little to no
+        visible wrinkles.
+    </p>
+    <table style="width=100%">
         <tr>
         <td align="middle">
             <a class="gallery" href="images/part2_low_damping.png"><img src="images/part2_low_damping.png" width="400px"/></a>
-            <figcaption align="middle">low damping</figcaption>
+            <figcaption align="middle">low damping (8%)</figcaption>
         </td>
         <td align="middle">
             <a class="gallery" href="images/part2_high_damping.png"><img src="images/part2_high_damping.png" width="400px"/></a>
-            <figcaption align="middle">high damping</figcaption>
+            <figcaption align="middle">high damping (79%)</figcaption>
         </td>
         </tr>
     </table>
 </div>
 
 <h2 align="middle">Part III: Handling collisions with other objects</h2>
+
+<p>
+    Now that we've implemented forces and estimating the updated positions of point masses, we can implement collision
+    handling for our cloth.
+    <br><br>
+    When a point mass on the cloth collides with a surface at a certain timestep, we apply a correction vector to the point mass's
+    last position so that the point mass gets bumped up to the surface, ensuring we don't get clipping of the
+    cloth through an object.
+    <br><br>
+    Below, we show the cloth landing on a plane and a sphere.
+</p>
 
 <div align="center">
     <table style="width=100%">
@@ -129,6 +202,14 @@
                 <figcaption align="middle">sphere collision</figcaption>
             </td>
         </tr>
+    </table>
+    <p align="left">
+        When we lower the spring constant, we see the cloth fall to a more "limp" resting state. We see more wrinkles and a
+        more flexible cloth due to lower constraints between the point masses. Conversely, we see a more rigid cloth
+        with a higher spring constant with the corners of the cloth sticking out from the sphere a bit due to the tighter
+        constraints between the point masses.
+    </p>
+    <table style="width=100%">
         <tr>
             <td align="middle">
                 <a class="gallery" href="images/part3_sphere_low_ks.png"><img src="images/part3_sphere_low_ks.png" width="400px"/></a>
@@ -328,6 +409,14 @@
             </td>
         </tr>
     </table>
+
+<h2 align="middle">Collaboration Note</h2>
+    <p align="left">
+        Our collaboration process involved regular communication through Facebook Messenger to discuss
+        potential implementations and to share debugging strategies. We took advantage of Git so we could program and
+        merge code together, and we learned that asking and answering questions with each other is a great way to learn
+        and squish those pesky bugs.
+    </p>
 </div>
 
 <script src="//code.jquery.com/jquery-latest.js"></script>
