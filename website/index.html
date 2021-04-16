@@ -34,6 +34,7 @@
 <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2021</h1>
 <h1 align="middle">Project 4: Cloth Simulator</h1>
 <h2 align="middle">Lindsey Guan & Simon Yei</h2>
+<br />
 
 <h2 align="middle">Overview</h2>
 <p>
@@ -57,6 +58,7 @@
     vector operations and reflecting a vector over a normal.
     <br><br>
 </p>
+<br />
 
 <h2 align="middle">Part I: Masses and springs</h2>
 
@@ -100,6 +102,7 @@
         </tr>
     </table>
 </div>
+<br />
 
 <h2 align="middle">Part II: Simulation via numerical integration</h2>
 
@@ -176,6 +179,7 @@
         </tr>
     </table>
 </div>
+<br />
 
 <h2 align="middle">Part III: Handling collisions with other objects</h2>
 
@@ -222,82 +226,93 @@
         </tr>
     </table>
 </div>
+<br />
 
 <h2 align="middle">Part IV: Handling self-collisions</h2>
 <div align="center">
+    <p>Our cloth was now interacting with its surroundings, but still had nothing to keep it from collapsing on itself, much like a pledge who had a bit too much to drink at the frat party.</p>
+    <p>To have it collapse in a way that least tries to obey the laws of physics, we implemented self-collisions, which reinforces cloth thickness constraints between points within the same spatial hash (cubic volume).</p>
     <table style="width=100%">
         <tr>
             <td align="middle">
-                <a class="gallery" href="images/part4_default1.png"><img src="images/part4_default1.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_default1.png"><img src="images/part4_default1.png" width="300px" /></a>
                 <figcaption align="middle">default settings, initial collision</figcaption>
             </td>
             <td align="middle">
-                <a class="gallery" href="images/part4_default2.png"><img src="images/part4_default2.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_default2.png"><img src="images/part4_default2.png" width="300px" /></a>
                 <figcaption align="middle">default settings, mid-collision</figcaption>
             </td>
             <td align="middle">
-                <a class="gallery" href="images/part4_default3.png"><img src="images/part4_default3.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_default3.png"><img src="images/part4_default3.png" width="300px" /></a>
                 <figcaption align="middle">default settings, resting state</figcaption>
             </td>
         </tr>
+    </table>
+    <p>The way in which the cloth folds on itself is mostly influenced by two parameters, the density of the cloth and the spring constant <tt>ks</tt> of the invisible springs holding it together.</p>
+    <table style="width=100%">
         <tr>
             <td align="middle">
-                <a class="gallery" href="images/part4_low_density1.png"><img src="images/part4_low_density1.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_low_density1.png"><img src="images/part4_low_density1.png" width="300px" /></a>
                 <figcaption align="middle">low density, initial collision</figcaption>
             </td>
             <td align="middle">
-                <a class="gallery" href="images/part4_low_density2.png"><img src="images/part4_low_density2.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_low_density2.png"><img src="images/part4_low_density2.png" width="300px" /></a>
                 <figcaption align="middle">low density, mid-collision</figcaption>
             </td>
             <td align="middle">
-                <a class="gallery" href="images/part4_low_density3.png"><img src="images/part4_low_density3.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_low_density3.png"><img src="images/part4_low_density3.png" width="300px" /></a>
                 <figcaption align="middle">low density, resting state</figcaption>
             </td>
         </tr>
         <tr>
             <td align="middle">
-                <a class="gallery" href="images/part4_high_density1.png"><img src="images/part4_high_density1.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_high_density1.png"><img src="images/part4_high_density1.png" width="300px" /></a>
                 <figcaption align="middle">high density, initial collision</figcaption>
             </td>
             <td align="middle">
-                <a class="gallery" href="images/part4_high_density2.png"><img src="images/part4_high_density2.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_high_density2.png"><img src="images/part4_high_density2.png" width="300px" /></a>
                 <figcaption align="middle">high density, mid-collision</figcaption>
             </td>
             <td align="middle">
-                <a class="gallery" href="images/part4_high_density3.png"><img src="images/part4_high_density3.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_high_density3.png"><img src="images/part4_high_density3.png" width="300px" /></a>
                 <figcaption align="middle">high density, resting state</figcaption>
             </td>
         </tr>
+    </table>
+    <p>As seen above, varying the cloth density affects the number and width of the folds as it collapses, as if adjusting the width of the cloth fibers from wide (low density) to very thin (high density).</p>
+    <table style="width=100%">
         <tr>
             <td align="middle">
-                <a class="gallery" href="images/part4_low_ks1.png"><img src="images/part4_low_ks1.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_low_ks1.png"><img src="images/part4_low_ks1.png" width="300px" /></a>
                 <figcaption align="middle">low spring constant, initial collision</figcaption>
             </td>
             <td align="middle">
-                <a class="gallery" href="images/part4_low_ks2.png"><img src="images/part4_low_ks2.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_low_ks2.png"><img src="images/part4_low_ks2.png" width="300px" /></a>
                 <figcaption align="middle">low spring constant, mid-collision</figcaption>
             </td>
             <td align="middle">
-                <a class="gallery" href="images/part4_low_ks3.png"><img src="images/part4_low_ks3.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_low_ks3.png"><img src="images/part4_low_ks3.png" width="300px" /></a>
                 <figcaption align="middle">low spring constant, resting state</figcaption>
             </td>
         </tr>
         <tr>
             <td align="middle">
-                <a class="gallery" href="images/part4_high_ks1.png"><img src="images/part4_high_ks1.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_high_ks1.png"><img src="images/part4_high_ks1.png" width="300px" /></a>
                 <figcaption align="middle">high spring constant, initial collision</figcaption>
             </td>
             <td align="middle">
-                <a class="gallery" href="images/part4_high_ks2.png"><img src="images/part4_high_ks2.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_high_ks2.png"><img src="images/part4_high_ks2.png" width="300px" /></a>
                 <figcaption align="middle">high spring constant, mid-collision</figcaption>
             </td>
             <td align="middle">
-                <a class="gallery" href="images/part4_high_ks3.png"><img src="images/part4_high_ks3.png" width="300px"/></a>
+                <a class="gallery" href="images/part4_high_ks3.png"><img src="images/part4_high_ks3.png" width="300px" /></a>
                 <figcaption align="middle">high spring constant, resting state</figcaption>
             </td>
         </tr>
     </table>
+    <p>Varying the spring constant affects the, well, springiness of the cloth. The lower the spring constant, the less resistant the cloth is to deformations, and vice versa.</p>
 </div>
+<br />
 
 <h2 align="middle">Part V: Shaders</h2>
 <div align="center">
@@ -313,7 +328,7 @@
     <p>This flexible, two-piece structure enables a wide variety of rendering techniques, of which we showcase a few.</p>
     <br />
 
-    <p>For starters, one can easily implement Blinn-Phong shading, which by now everyone knows is just ambient light + diffuse light + specular light:</p>
+    <p>For starters, one can easily implement Blinn-Phong shading, which by now everyone knows is ambient light + diffuse light + specular light:</p>
     <table align="middle" style="width=100%">
         <tr>
             <td align="center">
@@ -396,7 +411,7 @@
     </table>
     <br />
 
-    <p>Lastly, of course, the obligatory shiny mirror shader:</p>
+    <p>Lastly, of course, the obligatory shiny mirror boi:</p>
     <table style="width=100%">
         <tr>
             <td align="middle">
@@ -409,15 +424,16 @@
             </td>
         </tr>
     </table>
+</div>
+<br />
 
 <h2 align="middle">Collaboration Note</h2>
-    <p align="left">
+    <p align="center">
         Our collaboration process involved regular communication through Facebook Messenger to discuss
         potential implementations and to share debugging strategies. We took advantage of Git so we could program and
         merge code together, and we learned that asking and answering questions with each other is a great way to learn
         and squish those pesky bugs.
     </p>
-</div>
 
 <script src="//code.jquery.com/jquery-latest.js"></script>
 <script src="//cdn.jsdelivr.net/npm/featherlight@1.7.14/release/featherlight.min.js" type="text/javascript" charset="utf-8"></script>
