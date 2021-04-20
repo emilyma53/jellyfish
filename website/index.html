@@ -1,12 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>CS 184: ClothSim</title>
-<script type="text/javascript" id="MathJax-script" async
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
-</script>
-<link href="//cdn.jsdelivr.net/npm/featherlight@1.7.14/release/featherlight.min.css" type="text/css" rel="stylesheet" />
-<link href="//cdn.jsdelivr.net/npm/featherlight@1.7.14/release/featherlight.gallery.min.css" type="text/css" rel="stylesheet" />
 <style>
     body {
         padding: 100px;
@@ -25,431 +19,152 @@
         padding-left: 100px;
     }
 </style>
+<title>Jellyfish Simulation  |  CS 184</title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
 </head>
-
 <body>
 
-<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2021</h1>
-<h1 align="middle">Project 4: Cloth Simulator</h1>
-<h2 align="middle">Lindsey Guan & Simon Yei</h2>
-<br />
+    <h1 align="middle">CS184 Final Project</h1>
+    <br>
+    <h2 align="middle">Title: Realistic Jellyfish Rendering</h2>
+    <h3 align="middle">Team Members: Lindsey Guan, Rio Hayakawa, Emily Ma, Simon Yei</h3>
 
-<h2 align="middle">Overview</h2>
-<p>
-    Project 4 tasked us with implementing a cloth model so that we can simulate forces on a cloth and how its movement from one
-    timestep to the next. Specifically, we modeled our cloth as a set of point masses connected by springs. We implemented
-    support for colliding our cloth with planes and spheres, and we wrote a few shaders to create interesting lighting and
-    material effects.
-    <br><br>
-    For simulating movement, we applied Newton's Laws and Hooke's Law to simulate external forces and spring forces on
-    each point mass. We calculated the location of each point mass at each timestep using Verlet integration, which
-    gives us an accurate estimate of a point mass's new position based on its current position, velocity, acceleration,
-    and a damping constant. Additionally, density and spring constant parameters allow us to simulate different cloths with different behaviors.
-    <br><br>
-    We handle collisions by ensuring that when we update a point mass's position, it does not "cross" the surface of an object.
-    This allowed us to create the simulations below where we see the cloth gently resting on a plane or a sphere. An extension of this approach
-    helped us figure out how to support self-collisions so that the cloth won't clip through itself.
-    <br><br>
-    Lastly, we wrote shaders to support diffuse, Blinn-Phong, bump, displacement, texture-mapped, and mirror effects
-    for our cloth and the objects in each scene. Using GLSL took a bit of effort and resulted in a few sneaky typos
-    since our IDEs can't help us write code in .frag and .vert files, but we found GLSL's built-in functions useful for
-    vector operations and reflecting a vector over a normal.
-    <br><br>
-</p>
-<br />
+    <div class="padded">
 
-<h2 align="middle">Part I: Masses and springs</h2>
+    <br>
 
-<p>
-        Our cloth model is represented by a set of point masses and springs. The cloth consists of a set of evenly-spaced point
-    masses and each point mass is connected to other masses with springs. We have three types of springs, each representing a
-    different kind of constraint between the masses: structural, shearing, and bending.
-    <br><br>
-        Below, we show our cloth in wireframe mode with point masses and all constraints, then with no shearing constraints,
-    and lastly, with only shearing constraints.
-</p>
-<div align="center">
-    <p align="middle">Click to enlarge images.</p>
-    <table style="width=100%">
-        <th colspan="2" align="middle">All constraints</th>
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part1_all_large.png"><img src="images/part1_all_large.png" width="400px"/></a>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part1_all.png"><img src="images/part1_all.png" width="400px"/></a>
-            </td>
-        </tr>
-        <th colspan="2" align="middle">No shearing constraints</th>
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part1_no_shearing_large.png"><img src="images/part1_no_shearing_large.png" width="400px"/></a>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part1_no_shearing.png"><img src="images/part1_no_shearing.png" width="400px"/></a>
-            </td>
-        </tr>
-        <th colspan="2" align="middle">Only shearing constraints</th>
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part1_only_shearing_large.png"><img src="images/part1_only_shearing_large.png" width="400px"/></a>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part1_only_shearing.png"><img src="images/part1_only_shearing.png" width="400px"/></a>
-            </td>
-        </tr>
-    </table>
-</div>
-<br />
+        <p>
+          <b>Summary:</b> We hope to render an animated simulation of jellyfish movement in water. Modeling the jellyfish as a cloth,
+          applying hydrodynamic forces, and implementing ray tracing concepts to render a translucent skin will help us achieve
+          a realistic representation of this beautiful marine creature.
+        </p>
 
-<h2 align="middle">Part II: Simulation via numerical integration</h2>
+    <br>
 
-<p>
-    In order to apply forces on our cloth model, we computed the total force acting on each point mass due to spring
-    forces and gravity. We then use Verlet integration, which uses the current position,
-    velocity, total acceleration, and a damping constant to update each point mass's position. Damping aims to
-    simulate loss of energy due to friction and heat loss by slightly down-scaling velocity. Lastly, we prevent spring
-    deformation by ensuring that a spring's length is at most 10% greater than its rest length.
-    <br><br>
-    Here, we show the pinned cloth from <code>pinned4.json</code> at resting state with the default parameters.
-</p>
+    <h2 align="middle">Problem Description:</h2>
 
-<div align="center">
-    <table style="width=100%">
-        <tr>
-            <td colspan="2" align="middle">
-                <a class="gallery" href="images/part2_default.png"><img src="images/part2_default.png" width="400px"/></a>
-            </td>
-        </tr>
-    </table>
-    <p align="left">
-        When we lower the density of the cloth while the simulation plays, we see the cloth billow a little bit and develop
-        a softer, more wrinkly behavior. However, there isn't much of a noticeable difference between the default density and
-        lower density simulations when we play it from the beginning.
-        When we increase the density of the cloth while the simulation plays, we see the cloth sink a bit and the bottom of the cloth
-        stretch a bit farther away from the pinned areas.
-    </p>
-    <table style="width=100%">
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part2_low_density.png"><img src="images/part2_low_density.png" width="400px"/></a>
-                <figcaption align="middle">low density (1 g/cm^2)</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part2_high_density.png"><img src="images/part2_high_density.png" width="400px"/></a>
-                <figcaption align="middle">high density (1000 g/cm^2)</figcaption>
-            </td>
-        </tr>
-    </table>
-    <p align="left">
-        When we lower the spring constant of the cloth while the simulation plays, we see the cloth wiggle a bit and then
-        quickly settle into a resting state.
-        When we increase the spring constant of the cloth while the simulation plays, we see the cloth dramatically billow up
-        and down and then eventually reach a resting state.
-    </p>
-    <table style="width=100%">
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part2_low_ks.png"><img src="images/part2_low_ks.png" width="400px"/></a>
-                <figcaption align="middle">low spring constant (ks = 5 N/m)</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part2_high_ks.png"><img src="images/part2_high_ks.png" width="400px"/></a>
-                <figcaption align="middle">high spring constant (ks = 50000 N/m)</figcaption>
-            </td>
-        </tr>
-    </table>
-    <p align="left">
-        Lastly, when we lower the damping of the cloth, we see the cloth bounce and ripple after it falls.
-        When we increase the damping of the cloth, we see the cloth smoothly settle into resting state with little to no
-        visible wrinkles.
-    </p>
-    <table style="width=100%">
-        <tr>
-        <td align="middle">
-            <a class="gallery" href="images/part2_low_damping.png"><img src="images/part2_low_damping.png" width="400px"/></a>
-            <figcaption align="middle">low damping (8%)</figcaption>
-        </td>
-        <td align="middle">
-            <a class="gallery" href="images/part2_high_damping.png"><img src="images/part2_high_damping.png" width="400px"/></a>
-            <figcaption align="middle">high damping (79%)</figcaption>
-        </td>
-        </tr>
-    </table>
-</div>
-<br />
+        <p>
+          We are inspired by the mystery of the ocean. Since we cannot easily see jellyfish up close  ourselves, we want to
+          simulate jellyfish movement. In general, we wish to approach the problem of modeling animals and their movements.
+          This is important because we might want to model jellyfish or other marine animals in an animated movie, etc., so
+          this is a good opportunity to explore modeling biological movements. This problem is challenging because jellyfish
+          move underwater, so there will be additional hydrodynamic forces to consider. In general, we plan to approach this
+          problem by approximating the jellyfish as a cloth simulation. We will also apply translucent shaders to make more
+          lifelike rendering of the jellyfish.
+        </p>
 
-<h2 align="middle">Part III: Handling collisions with other objects</h2>
+    <br>
 
-<p>
-    Now that we've implemented forces and estimating the updated positions of point masses, we can implement collision
-    handling for our cloth.
-    <br><br>
-    When a point mass on the cloth collides with a surface at a certain timestep, we apply a correction vector to the point mass's
-    last position so that the point mass gets bumped up to the surface, ensuring we don't get clipping of the
-    cloth through an object.
-    <br><br>
-    Below, we show the cloth landing on a plane and a sphere.
-</p>
+    <h2 align="middle">Goals and Deliverables</h2>
 
-<div align="center">
-    <table style="width=100%">
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part3_plane.png"><img src="images/part3_plane.png" width="400px"/></a>
-                <figcaption align="middle">plane collision</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part3_sphere.png"><img src="images/part3_sphere.png" width="400px"/></a>
-                <figcaption align="middle">sphere collision</figcaption>
-            </td>
-        </tr>
-    </table>
-    <p align="left">
-        When we lower the spring constant, we see the cloth fall to a more "limp" resting state. We see more wrinkles and a
-        more flexible cloth due to lower constraints between the point masses. Conversely, we see a more rigid cloth
-        with a higher spring constant with the corners of the cloth sticking out from the sphere a bit due to the tighter
-        constraints between the point masses.
-    </p>
-    <table style="width=100%">
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part3_sphere_low_ks.png"><img src="images/part3_sphere_low_ks.png" width="400px"/></a>
-                <figcaption align="middle">low spring constant</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part3_sphere_high_ks.png"><img src="images/part3_sphere_high_ks.png" width="400px"/></a>
-                <figcaption align="middle">high spring constant</figcaption>
-            </td>
-        </tr>
-    </table>
-</div>
-<br />
+        <p> Our goal is to create short videos displaying realistically rendered jellyfish with convincing, physics-based movement. </p>
 
-<h2 align="middle">Part IV: Handling self-collisions</h2>
-<div align="center">
-    <p>Our cloth was now interacting with its surroundings, but still had nothing to keep it from collapsing on itself, much like a pledge who had a bit too much to drink at the frat party.</p>
-    <p>To have it collapse in a way that least tries to obey the laws of physics, we implemented self-collisions, which reinforces cloth thickness constraints between points within the same spatial hash (cubic volume).</p>
-    <table style="width=100%">
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part4_default1.png"><img src="images/part4_default1.png" width="300px" /></a>
-                <figcaption align="middle">default settings, initial collision</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part4_default2.png"><img src="images/part4_default2.png" width="300px" /></a>
-                <figcaption align="middle">default settings, mid-collision</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part4_default3.png"><img src="images/part4_default3.png" width="300px" /></a>
-                <figcaption align="middle">default settings, resting state</figcaption>
-            </td>
-        </tr>
-    </table>
-    <p>The way in which the cloth folds on itself is mostly influenced by two parameters, the density of the cloth and the spring constant <tt>ks</tt> of the invisible springs holding it together.</p>
-    <table style="width=100%">
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part4_low_density1.png"><img src="images/part4_low_density1.png" width="300px" /></a>
-                <figcaption align="middle">low density, initial collision</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part4_low_density2.png"><img src="images/part4_low_density2.png" width="300px" /></a>
-                <figcaption align="middle">low density, mid-collision</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part4_low_density3.png"><img src="images/part4_low_density3.png" width="300px" /></a>
-                <figcaption align="middle">low density, resting state</figcaption>
-            </td>
-        </tr>
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part4_high_density1.png"><img src="images/part4_high_density1.png" width="300px" /></a>
-                <figcaption align="middle">high density, initial collision</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part4_high_density2.png"><img src="images/part4_high_density2.png" width="300px" /></a>
-                <figcaption align="middle">high density, mid-collision</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part4_high_density3.png"><img src="images/part4_high_density3.png" width="300px" /></a>
-                <figcaption align="middle">high density, resting state</figcaption>
-            </td>
-        </tr>
-    </table>
-    <p>As seen above, varying the cloth density affects the number and width of the folds as it collapses, as if adjusting the width of the cloth fibers from wide (low density) to very thin (high density).</p>
-    <table style="width=100%">
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part4_low_ks1.png"><img src="images/part4_low_ks1.png" width="300px" /></a>
-                <figcaption align="middle">low spring constant, initial collision</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part4_low_ks2.png"><img src="images/part4_low_ks2.png" width="300px" /></a>
-                <figcaption align="middle">low spring constant, mid-collision</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part4_low_ks3.png"><img src="images/part4_low_ks3.png" width="300px" /></a>
-                <figcaption align="middle">low spring constant, resting state</figcaption>
-            </td>
-        </tr>
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part4_high_ks1.png"><img src="images/part4_high_ks1.png" width="300px" /></a>
-                <figcaption align="middle">high spring constant, initial collision</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part4_high_ks2.png"><img src="images/part4_high_ks2.png" width="300px" /></a>
-                <figcaption align="middle">high spring constant, mid-collision</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part4_high_ks3.png"><img src="images/part4_high_ks3.png" width="300px" /></a>
-                <figcaption align="middle">high spring constant, resting state</figcaption>
-            </td>
-        </tr>
-    </table>
-    <p>Varying the spring constant affects the, well, springiness of the cloth. The lower the spring constant, the less resistant the cloth is to deformations, and vice versa.</p>
-</div>
-<br />
+        <div align="center">
+            <table style="width=100%">
 
-<h2 align="middle">Part V: Shaders</h2>
-<div align="center">
-    <p>Having finally worked out the physics and collisions of our cloth, the only order of business left was to make it fabulous.</p>
-    <p>
-        This we accomplished through several OpenGL shaders, which were like little snapshots of project 3, but with more convenient built-ins.
-        Each shader program consists of two files:
-    </p>
-    <ul>
-        <li>one vertex shader that performs geometric transformations on vertices and outputs their parameters transformed to model space</li>
-        <li>one fragment shader that takes the output from the vertex shader and uses it to interpolate color values across small areas</li>
-    </ul>
-    <p>This flexible, two-piece structure enables a wide variety of rendering techniques, of which we showcase a few.</p>
-    <br />
+                <tr>
+                    <td align="middle">
+                        <video width="480px" align="center" autoplay muted loop>
+                            <source src=images/jellyfishstock.mp4 type=video/mp4>
+                        </video>
+                        <figcaption align="middle"> Movement of jellyfish through water.</figcaption>
+                    </td>
+                </tr>
+                <tr><td><br></td></tr>
+                <tr>
+                    <td align="middle">
+                        <img src="images/model.png" width="480px" />
+                        <figcaption align="middle"> Mass-spring model of jellyfish.</figcaption>
+                    </td>
+                </tr>
+                <tr><td><br></td></tr>
+                <tr>
+                    <td align="middle">
+                        <img src="images/translucent.jpg" width="480px" />
+                        <figcaption align="middle"> Translucent property of jellyfish membrane.</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
-    <p>For starters, one can easily implement Blinn-Phong shading, which by now everyone knows is ambient light + diffuse light + specular light:</p>
-    <table align="middle" style="width=100%">
-        <tr>
-            <td align="center">
-                <a class="gallery" href="images/part5_bp_amb.png"><img src="images/part5_bp_amb.png" width="240px" /></a>
-                <figcaption align="middle">ambient</figcaption>
-            </td>
-            <td align="center"> + </td>
-            <td align="center">
-                <a class="gallery" href="images/part5_bp_diff.png"><img src="images/part5_bp_diff.png" width="240px" /></a>
-                <figcaption align="middle">diffuse</figcaption>
-            </td>
-            <td align="center"> + </td>
-            <td align="center">
-                <a class="gallery" href="images/part5_bp_spec.png"><img src="images/part5_bp_spec.png" width="240px" /></a>
-                <figcaption align="middle">specular</figcaption>
-            </td>
-            <td align="center"> = </td>
-            <td align="center">
-                <a class="gallery" href="images/part5_bp_all.png"><img src="images/part5_bp_all.png" width="240px" /></a>
-                <figcaption align="middle">Blinn-Phong</figcaption>
-            </td>
-        </tr>
-    </table>
-    <br />
+    <br>
 
-    <p>Alternatively, one can sample color vectors directly from a texture, mapping said texture to the surface of the cloth (and sphere).</p>
-    <p>I had a flash of inspiration and captured something beautiful:</p>
-    <table style="width=100%">
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part5_tex_pepe0.png"><img src="images/part5_tex_pepe0.png" width="300px" /></a>
-                <figcaption align="middle">:(</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part5_tex_pepe1.png"><img src="images/part5_tex_pepe1.png" width="300px" /></a>
-                <figcaption align="middle">:(</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part5_tex_pepe2.png"><img src="images/part5_tex_pepe2.png" width="300px" /></a>
-                <figcaption align="middle">:)</figcaption>
-            </td>
-        </tr>
-    </table>
-    <br />
+        <h4> Baseline Goals: </h4>
 
-    <p>"But wait," you say, "this cloth is smooth and featureless! I demand a more interestingly contoured surface!"</p>
-    <p>Never fear, my friend. More interesting contours you shall receive, for we may edit surface normals through our fragment shader and even vertex positions through our vertex shader to achieve bump and displacement mapping:</p>
-    <table style="width=100%">
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part5_bump1.png"><img src="images/part5_bump1.png" width="300px" /></a>
-                <figcaption align="middle">bump shader on sphere</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part5_bump2.png"><img src="images/part5_bump2.png" width="300px" /></a>
-                <figcaption align="middle">bump shaded cloth on sphere</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part5_displacement.png"><img src="images/part5_displacement.png" width="300px" /></a>
-                <figcaption align="middle">Displacement shading adds vertex displacement in addition to bumpy normals</figcaption>
-            </td>
-        </tr>
-    </table>
-    <p>And if even this is not enough to satisfy your need for contours, well, simply turn up the render resolution and watch the contours multiply!</p>
-    <table style="width=100%">
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part5_bump1_128.png"><img src="images/part5_bump1_128.png" width="300px" /></a>
-                <figcaption align="middle">128 x 128</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part5_bump2_128.png"><img src="images/part5_bump2_128.png" width="300px" /></a>
-                <figcaption align="middle">128 x 128</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part5_displacement_128.png"><img src="images/part5_displacement_128.png" width="300px" /></a>
-                <figcaption align="middle">Admittedly, the difference is much more noticeable with displacement mapping</figcaption>
-            </td>
-        </tr>
-    </table>
-    <br />
+            <ul>
+                <li>We plan to deliver an animated simulation of jellyfish motion by building upon concepts from the ray tracing and cloth simulation projects.</li>
+                <li>
+                  We plan to modify the jellyfish as a cloth with strands of cloth that represent the tentacles and a set of springs to approximate muscle contraction.
+                  Using this model, we want to approximate realistic movement of jellyfish movement through water.
+                </li>
+                <li>After modeling the motion of the jellyfish, we plan to implement a shader to render the translucency and texture of the jellyfish. </li>
+            </ul>
 
-    <p>Lastly, of course, the obligatory shiny mirror boi:</p>
-    <table style="width=100%">
-        <tr>
-            <td align="middle">
-                <a class="gallery" href="images/part5_mirror1.png"><img src="images/part5_mirror1.png" width="400px" /></a>
-                <figcaption align="middle">Mirror shader on sphere</figcaption>
-            </td>
-            <td align="middle">
-                <a class="gallery" href="images/part5_mirror2.png"><img src="images/part5_mirror2.png" width="400px" /></a>
-                <figcaption align="middle">Shiny boi at resting state</figcaption>
-            </td>
-        </tr>
-    </table>
-</div>
-<br />
+        <h4> Aspirational Goals: </h4>
 
-<h2 align="middle">Collaboration Note</h2>
-    <p align="center">
-        Our collaboration process involved regular communication through Facebook Messenger to discuss
-        potential implementations and to share debugging strategies. We took advantage of Git so we could program and
-        merge code together, and we learned that asking and answering questions with each other is a great way to learn
-        and squish those pesky bugs.
-    </p>
+            <ul>
+                <li> If things go well, we would like to implement fluid simulation in the same environment as the jellyfish using fluid dynamics models.</li>
+                <li> Additionally, we hope to simulate light-scattering of the sun-light through the water projecting onto the jellyfish. </li>
+            </ul>
 
-<script src="//code.jquery.com/jquery-latest.js"></script>
-<script src="//cdn.jsdelivr.net/npm/featherlight@1.7.14/release/featherlight.min.js" type="text/javascript" charset="utf-8"></script>
-<script src="//cdn.jsdelivr.net/npm/featherlight@1.7.14/release/featherlight.gallery.min.js" type="text/javascript" charset="utf-8"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/detect_swipe/2.1.1/jquery.detect_swipe.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('.gallery').featherlightGallery();
-    });
+            <p>
+              To measure the quality of our simulation, we will compare our jellyfish renders and animation to videos of jellyfish in real life.
+              We will put emphasis on evaluating how realistic the movement looks, such as if it is evident that the jellyfish is moving through water.
+              We will similarly evaluate if the rendering looks lifelike compared to real images and videos. Through our analysis,
+              we hope to answer how we can approximate jellyfish movement and shading using techniques we have already learned in past projects,
+              in addition to using new concepts important for modeling jellyfish movement.
+            </p>
 
-    $('a.gallery').featherlightGallery( {
-        previousIcon: '&#9664;',     /* Code that is used as previous icon */
-        nextIcon: '&#9654;',         /* Code that is used as next icon */
-        galleryFadeIn: 100,          /* fadeIn speed when slide is loaded */
-        galleryFadeOut: 300          /* fadeOut speed before slide is loaded */
-    });
-</script>
+    <br>
+
+    <h2 align="middle">Schedule:</h2>
+
+        <h4> Week 1: Create cloth model</h4>
+            <ul>
+                <li> Modify codebase from project 4 to better fit this project </li>
+            </ul>
+
+        <h4> Week 2: Create spring model and basic shader for jellyfish</h4>
+            <ul>
+                <li> Create model of jellyfish with main body and tentacles </li>
+                <li> Configure clothsim springs and external forces to simulate jellyfish movement </li>
+                <li> Implement basic translucent/subsurface shader based on existing papers </li>
+            </ul>
+
+        <h4> Week 3: Improve shader for jellyfish</h4>
+            <ul>
+                <li> Improve movement by adjusting springs and forces </li>
+                <li> Create a texture map for a more realistic jellyfish visualization </li>
+            </ul>
+
+        <h4> Week 4: Implement aspirational goals, debug, create demos</h4>
+            <ul>
+                <li> Debug or improve model of jellyfish movement </li>
+                <li> Generate video/interactive demo for results </li>
+                <li> Implement fluid simulation or sunlight and subsurface scattering </li>
+            </ul>
+
+    <br>
+
+    <h2 align="middle">Resources:</h2>
+
+        <ul>
+            <li>
+              Rudolf, D., & Mould, D. (2010). An Interactive Fluid Model of Jellyfish for Animation. In A. Ranchordas,
+              J. M. Pereira, H. J. Araújo, & J. M. R. S. Tavares (Eds.), <i>Computer Vision, Imaging and Computer Graphics.
+              Theory and Applications</i> (pp. 59–72). Springer Berlin Heidelberg.
+            </li>
+            <li> Cloth simulation with aerodynamic forces: <a href="url">https://cseweb.ucsd.edu/classes/wi17/cse169-a/slides/CSE169_11.pdf</a> </li>
+            <li> Jellyfish physics facts and simulations: <a href="url">https://www.katexagoraris.com/jellyfish-physics-facts-and-simulat</a> </li>
+            <li> Project 4 ClothSim codebase </li>
+            <li> Physics of jellyfish locomotion & footage of jellyfish: <a href="url">https://www.youtube.com/watch?v=MmqfrJgakH4</a> </li>
+            <li>
+              Miles, J. G., & Battista, N. A. (2019). <i>Naut Your Everyday Jellyfish Model: Exploring How Tentacles and Oral Arms Impact Locomotion.</i>
+              Fluids, 4(3): <a href="url">https://doi.org/10.3390/fluids4030169</a>
+            </li>
+        </ul>
+
+    </div>
 </body>
 </html>
