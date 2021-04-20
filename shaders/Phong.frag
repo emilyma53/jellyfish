@@ -33,6 +33,20 @@ void main() {
 
   vec3 out_spec = ks * u_light_intensity / (r * r) * pow(max(0.0, dot(n3, h)), p);
   
-  out_color = vec4(out_amb + out_diff + out_spec, 1);
+  //out_color = vec4(out_amb + out_diff + out_spec, 1);
+
+  // Computation of the translucent illumination:
+ 
+  vec3 diffuseTranslucency = kd * u_light_intensity / (r * r) * max(0.0, dot(-n3, l));
+ 
+  vec3 forwardTranslucency;
+  if (dot(n3, l) > 0.0) {
+    forwardTranslucency = vec3(0.0, 0.0, 0.0);
+  }
+  else {
+    forwardTranslucency = ks * u_light_intensity / (r * r) * pow(max(0.0, dot(-l, v)), p);
+  }
+
+  out_color = vec4(out_amb + out_diff + out_spec + diffuseTranslucency +  forwardTranslucency, 1);
 }
 
