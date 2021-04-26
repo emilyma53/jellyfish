@@ -34,65 +34,100 @@ void Cloth::buildGrid() {
 	// TODO (Part 1): Build a grid of masses and springs.
 
 	// Add all point masses
-	double height_interval = this->height / this->num_height_points;
-	double width_interval = this->width / this->num_width_points;
-	for (int i = 0; i < this->num_height_points; i++) {
-		for (int j = 0; j < this->num_width_points; j++) {
-			Vector3D pos;
-			bool pin_point = false;
-			if (this->orientation == HORIZONTAL) {
-				pos = Vector3D(j * width_interval, 1.0f, i * height_interval);
-			}
-			else {
-				float z_pos = (rand() % 200) / 100000.0f - 0.001f;
-				pos = Vector3D(j * width_interval, i * height_interval, z_pos);
-			}
-			for (vector<int>& xy : this->pinned) {
-				if (xy[0] == i && xy[1] == j) {
-					pin_point = true;
-				}
-			}
-			this->point_masses.emplace_back(PointMass(pos, pin_point));
-		}
-	}
+//	double height_interval = this->height / this->num_height_points;
+//	double width_interval = this->width / this->num_width_points;
+//	for (int i = 0; i < this->num_height_points; i++) {
+//		for (int j = 0; j < this->num_width_points; j++) {
+//			Vector3D pos;
+//			bool pin_point = false;
+//			if (this->orientation == HORIZONTAL) {
+//				pos = Vector3D(j * width_interval, 1.0f, i * height_interval);
+//			}
+//			else {
+//				float z_pos = (rand() % 200) / 100000.0f - 0.001f;
+//				pos = Vector3D(j * width_interval, i * height_interval, z_pos);
+//			}
+//			for (vector<int>& xy : this->pinned) {
+//				if (xy[0] == i && xy[1] == j) {
+//					pin_point = true;
+//				}
+//			}
+//			this->point_masses.emplace_back(PointMass(pos, pin_point));
+//		}
+//	}
+    num_width_points = 20;
+    num_height_points = 7;
+    this->point_masses = std::vector<PointMass>();
+    this->springs = std::vector<Spring>();
+    std::vector<double> T {20.0,20.0,20.0,20.0,20.0,20.0,20.0};
+        std::vector<double> R {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+        
+        for (int i = 0; i < R.size(); i++) {
+            for (int j = 0; j < T[i]; j++) {
+                double r = R[i];
+                double theta = double(j) * (2.0 * PI / T[i]);
+                double x = r * cos(theta);
+                double y = r * sin(theta);
+                double z = floor(R[i]) * (PI /T.size());
+//                double z = 0.0;
+                Vector3D pos = Vector3D(x, y, z);
+                this->point_masses.emplace_back(PointMass(pos, false));
+            }
+        }
+        
+        int counter = -1;
+        for (int i = 0; i < R.size(); i++) {
+            for (int j = 0; j < T[i]; j++) {
+                counter++;
+                if (j == 0) continue;
+                PointMass* o = &this->point_masses[counter - 1];
+                PointMass* p = &this->point_masses[counter];
+                this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+                if (j + 1 == int(T[i])) {
+                    o = &this->point_masses[counter - (19)];
+                    this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+                }
+            }
+        }
+    
 
 	// Add all springs
 	// 1. Structural constraints exist between a point mass and the point mass to its left as well as the point mass above it.
 	// 2. Shearing constraints exist between a point mass and the point mass to its diagonal upper left as well as the point mass to its diagonal upper right.
 	// 3. Bending constraints exist between a point mass and the point mass two away to its left as well as the point mass two above it.
-	for (int i = 0; i < this->num_height_points; i++) {
-		for (int j = 0; j < this->num_width_points; j++) {
-			PointMass* p = &this->point_masses[i * this->num_width_points + j];
-			PointMass* o;
-			// structural constraints
-			if (j > 0) { // left
-				o = &this->point_masses[i * this->num_width_points + (j - 1)];
-				this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-			}
-			if (i > 0) { // top
-				o = &this->point_masses[(i - 1) * this->num_width_points + j];
-				this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-			}
-			// shearing constraints
-			if (i > 0 && j > 0) { // diagonal left
-				o = &this->point_masses[(i - 1) * this->num_width_points + (j - 1)];
-				this->springs.emplace_back(Spring(o, p, SHEARING));
-			}
-			if (i > 0 && j < (this->num_width_points - 1)) { // diagonal right
-				o = &this->point_masses[(i - 1) * this->num_width_points + (j + 1)];
-				this->springs.emplace_back(Spring(o, p, SHEARING));
-			}
-			// bending constraints
-			if (j > 1) { // left
-				o = &this->point_masses[i * this->num_width_points + (j - 2)];
-				this->springs.emplace_back(Spring(o, p, BENDING));
-			}
-			if (i > 1) { // top
-				o = &this->point_masses[(i - 2) * this->num_width_points + j];
-				this->springs.emplace_back(Spring(o, p, BENDING));
-			}
-		}
-	}
+//	for (int i = 0; i < this->num_height_points; i++) {
+//		for (int j = 0; j < this->num_width_points; j++) {
+//			PointMass* p = &this->point_masses[i * this->num_width_points + j];
+//			PointMass* o;
+//			// structural constraints
+//			if (j > 0) { // left
+//				o = &this->point_masses[i * this->num_width_points + (j - 1)];
+//				this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+//			}
+//			if (i > 0) { // top
+//				o = &this->point_masses[(i - 1) * this->num_width_points + j];
+//				this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+//			}
+//			// shearing constraints
+//			if (i > 0 && j > 0) { // diagonal left
+//				o = &this->point_masses[(i - 1) * this->num_width_points + (j - 1)];
+//				this->springs.emplace_back(Spring(o, p, SHEARING));
+//			}
+//			if (i > 0 && j < (this->num_width_points - 1)) { // diagonal right
+//				o = &this->point_masses[(i - 1) * this->num_width_points + (j + 1)];
+//				this->springs.emplace_back(Spring(o, p, SHEARING));
+//			}
+//			// bending constraints
+//			if (j > 1) { // left
+//				o = &this->point_masses[i * this->num_width_points + (j - 2)];
+//				this->springs.emplace_back(Spring(o, p, BENDING));
+//			}
+//			if (i > 1) { // top
+//				o = &this->point_masses[(i - 2) * this->num_width_points + j];
+//				this->springs.emplace_back(Spring(o, p, BENDING));
+//			}
+//		}
+//	}
 }
 
 void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParameters* cp,
