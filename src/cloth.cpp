@@ -93,18 +93,18 @@ void Cloth::buildGrid() {
 
     // add falange point masses
    
-    Vector3D pos = point_masses[counter - 20].position;
-    pos.z = pos.z - 4.0;
-    this->point_masses.emplace_back(PointMass(pos, false));
-    Vector3D pos2 = point_masses[counter - 19].position;
-    pos2.z = pos2.z - 4.0;
-    this->point_masses.emplace_back(PointMass(pos2, false));
-    PointMass* o = &this->point_masses[counter - 20];
-    PointMass* p = &this->point_masses[counter];
-    this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-    o = &this->point_masses[counter - 19];
-    p = &this->point_masses[counter + 1];
-    this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+//    Vector3D pos = point_masses[counter - 20].position;
+//    pos.z = pos.z - 4.0;
+//    this->point_masses.emplace_back(PointMass(pos, false));
+//    Vector3D pos2 = point_masses[counter - 19].position;
+//    pos2.z = pos2.z - 4.0;
+//    this->point_masses.emplace_back(PointMass(pos2, false));
+//    PointMass* o = &this->point_masses[counter - 20];
+//    PointMass* p = &this->point_masses[counter];
+//    this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+//    o = &this->point_masses[counter - 19];
+//    p = &this->point_masses[counter + 1];
+//    this->springs.emplace_back(Spring(o, p, STRUCTURAL));
     
 
 	// Add all springs

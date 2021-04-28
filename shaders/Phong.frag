@@ -1,9 +1,12 @@
+  
 #version 330
 
 uniform vec4 u_color;
 uniform vec3 u_cam_pos;
 uniform vec3 u_light_pos;
 uniform vec3 u_light_intensity;
+
+uniform sampler2D u_texture_1;
 
 in vec4 v_position;
 in vec4 v_normal;
@@ -16,7 +19,7 @@ void main() {
   float ka = 0.1;
   float ks = 0.5;
   int p = 100;
-  vec3 kd = vec3(u_color);
+  vec3 kd = vec3(u_color)/2.0;
   vec3 ia = vec3(1.0);
 
   vec3 out_amb = ka * ia;
@@ -47,6 +50,8 @@ void main() {
     forwardTranslucency = ks * u_light_intensity / (r * r) * pow(max(0.0, dot(-l, v)), p);
   }
 
-  out_color = vec4(out_amb + out_diff + out_spec + diffuseTranslucency +  forwardTranslucency, 1);
-}
+  vec3 out_tex = vec3(texture(u_texture_1, v_uv));
+  float alpha = 0.4;
 
+  out_color = vec4(out_tex + out_diff + out_spec + diffuseTranslucency +  forwardTranslucency, alpha / abs(dot(v, n3)));
+}
