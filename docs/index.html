@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+    body {
+        padding: 100px;
+        width: 1000px;
+        margin: auto;
+        text-align: left;
+        font-weight: 300;
+        font-family: 'Open Sans', sans-serif;
+        color: #121212;
+        line-height: 1.5;
+    }
+    div.padded {
+        padding-top: 0px;
+        padding-right: 100px;
+        padding-bottom: 0.25in;
+        padding-left: 100px;
+    }
+</style>
+<title>Jellyfish Simulation  |  CS 184</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+</head>
+<body>
+
+    <h1 align="middle">CS184 Final Project</h1>
+    <br>
+    <h2 align="middle">Title: Realistic Jellyfish Rendering</h2>
+    <h3 align="middle">Team Members: Lindsey Guan, Rio Hayakawa, Emily Ma, Simon Yei</h3>
+
+    <div class="padded">
+
+    <br>
+
+        <p>
+          <b>Summary:</b> We hope to render an animated simulation of jellyfish movement in water. Modeling the jellyfish as a cloth,
+          applying hydrodynamic forces, and implementing ray tracing concepts to render a translucent skin will help us achieve
+          a realistic representation of this beautiful marine creature.
+        </p>
+
+    <br>
+
+    <h2 align="middle">Problem Description:</h2>
+
+        <p>
+          We are inspired by the mystery of the ocean. Since we cannot easily see jellyfish up close  ourselves, we want to
+          simulate jellyfish movement. In general, we wish to approach the problem of modeling animals and their movements.
+          This is important because we might want to model jellyfish or other marine animals in an animated movie, etc., so
+          this is a good opportunity to explore modeling biological movements. This problem is challenging because jellyfish
+          move underwater, so there will be additional hydrodynamic forces to consider. In general, we plan to approach this
+          problem by approximating the jellyfish as a cloth simulation. We will also apply translucent shaders to make more
+          lifelike rendering of the jellyfish.
+        </p>
+
+    <br>
+
+    <h2 align="middle">Goals and Deliverables</h2>
+
+        <p> Our goal is to create short videos displaying realistically rendered jellyfish with convincing, physics-based movement. </p>
+
+        <div align="center">
+            <table style="width=100%">
+
+                <tr>
+                    <td align="middle">
+                        <video width="480px" align="center" autoplay muted loop>
+                            <source src=images/jellyfishstock.mp4 type=video/mp4>
+                        </video>
+                        <figcaption align="middle"> Movement of jellyfish through water.</figcaption>
+                    </td>
+                </tr>
+                <tr><td><br></td></tr>
+                <tr>
+                    <td align="middle">
+                        <img src="images/model.png" width="480px" />
+                        <figcaption align="middle"> Mass-spring model of jellyfish.</figcaption>
+                    </td>
+                </tr>
+                <tr><td><br></td></tr>
+                <tr>
+                    <td align="middle">
+                        <img src="images/translucent.jpg" width="480px" />
+                        <figcaption align="middle"> Translucent property of jellyfish membrane.</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    <br>
+
+        <h4> Baseline Goals: </h4>
+
+            <ul>
+                <li>We plan to deliver an animated simulation of jellyfish motion by building upon concepts from the ray tracing and cloth simulation projects.</li>
+                <li>
+                  We plan to modify the jellyfish as a cloth with strands of cloth that represent the tentacles and a set of springs to approximate muscle contraction.
+                  Using this model, we want to approximate realistic movement of jellyfish movement through water.
+                </li>
+                <li>After modeling the motion of the jellyfish, we plan to implement a shader to render the translucency and texture of the jellyfish. </li>
+            </ul>
+
+        <h4> Aspirational Goals: </h4>
+
+            <ul>
+                <li> If things go well, we would like to implement fluid simulation in the same environment as the jellyfish using fluid dynamics models.</li>
+                <li> Additionally, we hope to simulate light-scattering of the sun-light through the water projecting onto the jellyfish. </li>
+            </ul>
+
+            <p>
+              To measure the quality of our simulation, we will compare our jellyfish renders and animation to videos of jellyfish in real life.
+              We will put emphasis on evaluating how realistic the movement looks, such as if it is evident that the jellyfish is moving through water.
+              We will similarly evaluate if the rendering looks lifelike compared to real images and videos. Through our analysis,
+              we hope to answer how we can approximate jellyfish movement and shading using techniques we have already learned in past projects,
+              in addition to using new concepts important for modeling jellyfish movement.
+            </p>
+
+    <br>
+
+    <h2 align="middle">Schedule:</h2>
+
+        <h4> Week 1: Create cloth model</h4>
+            <ul>
+                <li> Modify codebase from project 4 to better fit this project </li>
+            </ul>
+
+        <h4> Week 2: Create spring model and basic shader for jellyfish</h4>
+            <ul>
+                <li> Create model of jellyfish with main body and tentacles </li>
+                <li> Configure clothsim springs and external forces to simulate jellyfish movement </li>
+                <li> Implement basic translucent/subsurface shader based on existing papers </li>
+            </ul>
+
+        <h4> Week 3: Improve shader for jellyfish</h4>
+            <ul>
+                <li> Improve movement by adjusting springs and forces </li>
+                <li> Create a texture map for a more realistic jellyfish visualization </li>
+            </ul>
+
+        <h4> Week 4: Implement aspirational goals, debug, create demos</h4>
+            <ul>
+                <li> Debug or improve model of jellyfish movement </li>
+                <li> Generate video/interactive demo for results </li>
+                <li> Implement fluid simulation or sunlight and subsurface scattering </li>
+            </ul>
+
+    <br>
+
+    <h2 align="middle">Resources:</h2>
+
+        <ul>
+            <li>
+              Rudolf, D., & Mould, D. (2010). An Interactive Fluid Model of Jellyfish for Animation. In A. Ranchordas,
+              J. M. Pereira, H. J. Araújo, & J. M. R. S. Tavares (Eds.), <i>Computer Vision, Imaging and Computer Graphics.
+              Theory and Applications</i> (pp. 59–72). Springer Berlin Heidelberg.
+            </li>
+            <li> Cloth simulation with aerodynamic forces: <a href="url">https://cseweb.ucsd.edu/classes/wi17/cse169-a/slides/CSE169_11.pdf</a> </li>
+            <li> Jellyfish physics facts and simulations: <a href="url">https://www.katexagoraris.com/jellyfish-physics-facts-and-simulat</a> </li>
+            <li> Project 4 ClothSim codebase </li>
+            <li> Physics of jellyfish locomotion & footage of jellyfish: <a href="url">https://www.youtube.com/watch?v=MmqfrJgakH4</a> </li>
+            <li>
+              Miles, J. G., & Battista, N. A. (2019). <i>Naut Your Everyday Jellyfish Model: Exploring How Tentacles and Oral Arms Impact Locomotion.</i>
+              Fluids, 4(3): <a href="url">https://doi.org/10.3390/fluids4030169</a>
+            </li>
+        </ul>
+
+    </div>
+</body>
+</html>
