@@ -33,35 +33,50 @@
     <div class="padded">
 
     <br>
-
         <p>
-          <b>Summary:</b> *insert summary here*
+          <b>Summary:</b> Our project is to render an animated simulation of jellyfish movement in water through two broad
+            goals: create a shader replicating the appearance of a jellyfish in water and to create a spring-mass model
+            to represent the muscles and membrane of the jellyfish. So far, we have written a translucency shader featuring
+            silhouette enhancement, in addition to a nice texture map for jellyfish. We have also created a spring-mass
+            frame for the top cap of a jellyfish.
         </p>
-
     <br>
 
     <h2 align="middle">Preliminary results</h2>
-
         <p>
-          *insert preliminary results here*
+            Below, we show the results from our custom shader. Translucency was achieved through allowing light
+            to pass through a surface. Our shading term combined Phong shading with two new terms: diffuse translucency,
+            which is analogous to the diffuse term in Phong shading, and forward-scattering translucency, which is
+            analogous to specular shading. The ability to see through the cloth model was achieved through reducing the
+            alpha term of the color vector. Lastly, we implemented silhouette enhancement, which increased the opacity
+            of the surface at the edges of the object relative to the camera angle.
         </p>
 
+        <p>
+            *talk about frame model*
+        </p>
     <br>
 
     <h2 align="middle">Progress</h2>
+        <p>
+            We've made good progress in simulating the appearance of the jellyfish membrane, but could extend our current
+            implementation to create a jellyfish surface that looks more voluminous and scatters light from the environment.
 
+            *talk about progress in model frame*
+        </p>
 
     <h2 align="middle">Updated work plan</h2>
 
         <h4> Week 3: Improve shader and cloth model for jellyfish</h4>
             <ul>
-                <li> *plan* </li>
+                <li> Create shader that supports a voluminous jellyfish membrane. </li>
                 <li> *plan* </li>
             </ul>
 
         <h4> Week 4: Implement aspirational goals, debug, create demos</h4>
             <ul>
-                <li> *plan* </li>
+                <li> Implement subsurface scattering for the jellyfish shader and implement a background shader
+                to simulate movement in the ocean and sunlight passing through water. </li>
                 <li> *plan* </li>
             </ul>
 
