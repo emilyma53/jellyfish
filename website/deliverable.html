@@ -53,7 +53,12 @@
         </p>
 
         <p>
-            *talk about frame model*
+            Additionally, we began constructing the basic model for the jellyfish using the existing code structure 
+            from the Clothsim project. We edited Cloth::buildGrid() so that it would create point masses and springs 
+            for the circular cap of the jellyfish. We initialized the pointmasses in layers of rings so that the 
+            pointmasses appear as concentric circles in the x-y plane and used a parabolic function in the z-direction. 
+            We ran into trouble with rendering the mesh as we needed to edit the initialization of the triangles and 
+            half edge structures as well. We added structural springs along each ring to provide support for the jellyfish. 
         </p>
     <br>
 
@@ -62,7 +67,10 @@
             We've made good progress in simulating the appearance of the jellyfish membrane, but could extend our current
             implementation to create a jellyfish surface that looks more voluminous and scatters light from the environment.
 
-            *talk about progress in model frame*
+            We were able to get a good start to the frame of the jellyfish model by constructing the jellyfish cap. We will 
+            continue to construct the spring structure to include shearing and bending springs along the vertical axes of the 
+            cap as well. Now that we have the basic strucutre, we plan to add the tentacles of the jellyfish as rectangular 
+            cloths hanging from the cap. 
         </p>
 
     <h2 align="middle">Updated work plan</h2>
