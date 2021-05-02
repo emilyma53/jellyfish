@@ -55,57 +55,88 @@ void Cloth::buildGrid() {
 //			this->point_masses.emplace_back(PointMass(pos, pin_point));
 //		}
 //	}
-    num_width_points = 20;
-    num_height_points = 7;
     this->point_masses = std::vector<PointMass>();
     this->springs = std::vector<Spring>();
     std::vector<double> T {20.0,20.0,20.0,20.0,20.0,20.0,20.0};
-        std::vector<double> R {.0001, .5, 1.5, 2.5, 3.5, 4.5, 5.5};
+    std::vector<double> R {.0001, .5, 1.5, 2.5, 3.5, 4.5, 5.5};
+    num_width_points = T[0];
+    num_height_points = R.size();
         
-        for (int i = 0; i < R.size(); i++) {
-            for (int j = 0; j < T[i]; j++) {
+    // Pointmasses for bell of jellyfish
+    for (int i = 0; i < num_height_points + 1; i++) {
+        for (int j = 0; j < num_width_points; j++) {
+            if (i == num_height_points) {
+                Vector3D pos = this->point_masses[num_width_points * num_height_points - 1 + i].position;
+                pos.z -= 4.0;
+                this->point_masses.emplace_back(PointMass(pos, false));
+            } else {
                 double r = R[i];
                 double theta = double(j) * (2.0 * PI / T[i]);
                 double x = r * cos(theta);
                 double y = r * sin(theta);
                 double z = -.1*(R[i] * R[i]);
-//                double z = 0.0;
                 Vector3D pos = Vector3D(x, y, z);
                 this->point_masses.emplace_back(PointMass(pos, false));
             }
         }
+    }
     
-    
-        int counter = -1;
-        for (int i = 0; i < R.size(); i++) {
-            for (int j = 0; j < T[i]; j++) {
-                counter++;
-                if (j == 0) continue;
-                PointMass* o = &this->point_masses[counter - 1];
-                PointMass* p = &this->point_masses[counter];
+    // Pointmasses for tentacles
+//    int firstIndex = point_masses.size() - num_width_points;
+//    int tentacle_height = 1;
+//    for (int i = 0; i < num_width_points; i++) {
+//        Vector3D pos = point_masses[firstIndex + i].position;
+//        pos.z = pos.z - 4.0;
+//        this->point_masses.emplace_back(PointMass(pos, false));
+//    }
+
+    // Ring Springs
+    for (int i = 0; i < num_height_points + 1; i++) {
+        for (int j = 0; j < num_width_points; j++) {
+            if (j == 0) continue;
+            int index = num_width_points * i + j;
+            PointMass* o = &this->point_masses[index - 1];
+            PointMass* p = &this->point_masses[index];
+            this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+            if (j + 1 == int(T[i])) {
+                o = &this->point_masses[index - (num_width_points - 1)];
                 this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-                if (j + 1 == int(T[i])) {
-                    o = &this->point_masses[counter - (19)];
-                    this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-                }
             }
         }
+    }
+    
+    // Vertical springs
+    // NOTE: cases an assertion error when toggling spring types in simulator
+    for (int i = 0; i < num_height_points; i++) {
+        for (int j = 0; j < num_width_points; j++) {
+            if (i == num_height_points - 1) continue;
+            int index = num_width_points * i + j;
+            PointMass* o = &this->point_masses[index];
+            PointMass* p = &this->point_masses[index + num_width_points];
+            this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+        }
+    }
+    
+    // Vertical springs for tentacles
+//    for (int i = 0; i < 1; i++) {
+//        PointMass* o = &this->point_masses[firstIndex + i];
+//        PointMass* p = &this->point_masses[firstIndex + num_width_points + i];
+//        this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+//    }
 
     // add falange point masses
-   
-    Vector3D pos = point_masses[counter - num_width_points].position;
-    pos.z = pos.z - 4.0;
-    this->point_masses.emplace_back(PointMass(pos, false));
-    Vector3D pos2 = point_masses[counter - num_width_points - 1].position;
-    pos2.z = pos2.z - 4.0;
-    this->point_masses.emplace_back(PointMass(pos2, false));
-    PointMass* o = &this->point_masses[counter - 20];
-    PointMass* p = &this->point_masses[counter];
-    this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-    o = &this->point_masses[counter - 19];
-    p = &this->point_masses[counter + 1];
-    this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-    
+//    Vector3D pos = point_masses[counter - num_width_points].position;
+//    pos.z = pos.z - 4.0;
+//    this->point_masses.emplace_back(PointMass(pos, false));
+//    Vector3D pos2 = point_masses[counter - num_width_points - 1].position;
+//    pos2.z = pos2.z - 4.0;
+//    this->point_masses.emplace_back(PointMass(pos2, false));
+//    PointMass* o = &this->point_masses[counter - 20];
+//    PointMass* p = &this->point_masses[counter];
+//    this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+//    o = &this->point_masses[counter - 19];
+//    p = &this->point_masses[counter + 1];
+//    this->springs.emplace_back(Spring(o, p, STRUCTURAL));
 
 	// Add all springs
 	// 1. Structural constraints exist between a point mass and the point mass to its left as well as the point mass above it.
