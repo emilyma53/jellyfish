@@ -62,14 +62,16 @@ void Cloth::buildGrid() {
     num_width_points = T[0];
     num_height_points = R.size();
         
-    // Pointmasses for bell of jellyfish
-    for (int i = 0; i < num_height_points + 1; i++) {
+    // Pointmasses for bell of jellyfish;
+    int lastIndexBell = num_width_points * num_height_points - 1;
+//    num_height_points += 1;
+    for (int i = 0; i < num_height_points; i++) {
         for (int j = 0; j < num_width_points; j++) {
-            if (i == num_height_points) {
-                Vector3D pos = this->point_masses[num_width_points * num_height_points - 1 + i].position;
-                pos.z -= 4.0;
-                this->point_masses.emplace_back(PointMass(pos, false));
-            } else {
+//            if (i == num_height_points - 1) {
+//                Vector3D pos = this->point_masses[lastIndexBell - num_width_points - 1 + j].position;
+//                pos.z -= 4.0;
+//                this->point_masses.emplace_back(PointMass(pos, false));
+//            } else {
                 double r = R[i];
                 double theta = double(j) * (2.0 * PI / T[i]);
                 double x = r * cos(theta);
@@ -77,7 +79,7 @@ void Cloth::buildGrid() {
                 double z = -.1*(R[i] * R[i]);
                 Vector3D pos = Vector3D(x, y, z);
                 this->point_masses.emplace_back(PointMass(pos, false));
-            }
+//            }
         }
     }
     
@@ -91,7 +93,7 @@ void Cloth::buildGrid() {
 //    }
 
     // Ring Springs
-    for (int i = 0; i < num_height_points + 1; i++) {
+    for (int i = 0; i < num_height_points; i++) {
         for (int j = 0; j < num_width_points; j++) {
             if (j == 0) continue;
             int index = num_width_points * i + j;
@@ -324,10 +326,10 @@ void Cloth::reset() {
 
 void Cloth::buildClothMesh() {
 	if (point_masses.size() == 0) return;
-
+    
 	ClothMesh* clothMesh = new ClothMesh();
 	vector<Triangle*> triangles;
-
+    
 	// Create vector of triangles
 	for (int y = 0; y < num_height_points - 1; y++) {
 		for (int x = 0; x < num_width_points; x++) {
