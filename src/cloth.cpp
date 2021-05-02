@@ -34,65 +34,149 @@ void Cloth::buildGrid() {
 	// TODO (Part 1): Build a grid of masses and springs.
 
 	// Add all point masses
-	double height_interval = this->height / this->num_height_points;
-	double width_interval = this->width / this->num_width_points;
-	for (int i = 0; i < this->num_height_points; i++) {
-		for (int j = 0; j < this->num_width_points; j++) {
-			Vector3D pos;
-			bool pin_point = false;
-			if (this->orientation == HORIZONTAL) {
-				pos = Vector3D(j * width_interval, 1.0f, i * height_interval);
-			}
-			else {
-				float z_pos = (rand() % 200) / 100000.0f - 0.001f;
-				pos = Vector3D(j * width_interval, i * height_interval, z_pos);
-			}
-			for (vector<int>& xy : this->pinned) {
-				if (xy[0] == i && xy[1] == j) {
-					pin_point = true;
-				}
-			}
-			this->point_masses.emplace_back(PointMass(pos, pin_point));
-		}
-	}
+//	double height_interval = this->height / this->num_height_points;
+//	double width_interval = this->width / this->num_width_points;
+//	for (int i = 0; i < this->num_height_points; i++) {
+//		for (int j = 0; j < this->num_width_points; j++) {
+//			Vector3D pos;
+//			bool pin_point = false;
+//			if (this->orientation == HORIZONTAL) {
+//				pos = Vector3D(j * width_interval, 1.0f, i * height_interval);
+//			}
+//			else {
+//				float z_pos = (rand() % 200) / 100000.0f - 0.001f;
+//				pos = Vector3D(j * width_interval, i * height_interval, z_pos);
+//			}
+//			for (vector<int>& xy : this->pinned) {
+//				if (xy[0] == i && xy[1] == j) {
+//					pin_point = true;
+//				}
+//			}
+//			this->point_masses.emplace_back(PointMass(pos, pin_point));
+//		}
+//	}
+    this->point_masses = std::vector<PointMass>();
+    this->springs = std::vector<Spring>();
+    std::vector<double> T {20.0,20.0,20.0,20.0,20.0,20.0,20.0};
+    std::vector<double> R {.0001, .5, 1.5, 2.5, 3.5, 4.5, 5.5};
+    num_width_points = T[0];
+    num_height_points = R.size();
+        
+    // Pointmasses for bell of jellyfish;
+    int lastIndexBell = num_width_points * num_height_points - 1;
+//    num_height_points += 1;
+    for (int i = 0; i < num_height_points; i++) {
+        for (int j = 0; j < num_width_points; j++) {
+//            if (i == num_height_points - 1) {
+//                Vector3D pos = this->point_masses[lastIndexBell - num_width_points - 1 + j].position;
+//                pos.z -= 4.0;
+//                this->point_masses.emplace_back(PointMass(pos, false));
+//            } else {
+                double r = R[i];
+                double theta = double(j) * (2.0 * PI / T[i]);
+                double x = r * cos(theta);
+                double y = r * sin(theta);
+                double z = -.1*(R[i] * R[i]);
+                Vector3D pos = Vector3D(x, y, z);
+                this->point_masses.emplace_back(PointMass(pos, false));
+//            }
+        }
+    }
+    
+    // Pointmasses for tentacles
+//    int firstIndex = point_masses.size() - num_width_points;
+//    int tentacle_height = 1;
+//    for (int i = 0; i < num_width_points; i++) {
+//        Vector3D pos = point_masses[firstIndex + i].position;
+//        pos.z = pos.z - 4.0;
+//        this->point_masses.emplace_back(PointMass(pos, false));
+//    }
+
+    // Ring Springs
+    for (int i = 0; i < num_height_points; i++) {
+        for (int j = 0; j < num_width_points; j++) {
+            if (j == 0) continue;
+            int index = num_width_points * i + j;
+            PointMass* o = &this->point_masses[index - 1];
+            PointMass* p = &this->point_masses[index];
+            this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+            if (j + 1 == int(T[i])) {
+                o = &this->point_masses[index - (num_width_points - 1)];
+                this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+            }
+        }
+    }
+    
+    // Vertical springs
+    // NOTE: cases an assertion error when toggling spring types in simulator
+    for (int i = 0; i < num_height_points; i++) {
+        for (int j = 0; j < num_width_points; j++) {
+            if (i == num_height_points - 1) continue;
+            int index = num_width_points * i + j;
+            PointMass* o = &this->point_masses[index];
+            PointMass* p = &this->point_masses[index + num_width_points];
+            this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+        }
+    }
+    
+    // Vertical springs for tentacles
+//    for (int i = 0; i < 1; i++) {
+//        PointMass* o = &this->point_masses[firstIndex + i];
+//        PointMass* p = &this->point_masses[firstIndex + num_width_points + i];
+//        this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+//    }
+
+    // add falange point masses
+//    Vector3D pos = point_masses[counter - num_width_points].position;
+//    pos.z = pos.z - 4.0;
+//    this->point_masses.emplace_back(PointMass(pos, false));
+//    Vector3D pos2 = point_masses[counter - num_width_points - 1].position;
+//    pos2.z = pos2.z - 4.0;
+//    this->point_masses.emplace_back(PointMass(pos2, false));
+//    PointMass* o = &this->point_masses[counter - 20];
+//    PointMass* p = &this->point_masses[counter];
+//    this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+//    o = &this->point_masses[counter - 19];
+//    p = &this->point_masses[counter + 1];
+//    this->springs.emplace_back(Spring(o, p, STRUCTURAL));
 
 	// Add all springs
 	// 1. Structural constraints exist between a point mass and the point mass to its left as well as the point mass above it.
 	// 2. Shearing constraints exist between a point mass and the point mass to its diagonal upper left as well as the point mass to its diagonal upper right.
 	// 3. Bending constraints exist between a point mass and the point mass two away to its left as well as the point mass two above it.
-	for (int i = 0; i < this->num_height_points; i++) {
-		for (int j = 0; j < this->num_width_points; j++) {
-			PointMass* p = &this->point_masses[i * this->num_width_points + j];
-			PointMass* o;
-			// structural constraints
-			if (j > 0) { // left
-				o = &this->point_masses[i * this->num_width_points + (j - 1)];
-				this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-			}
-			if (i > 0) { // top
-				o = &this->point_masses[(i - 1) * this->num_width_points + j];
-				this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-			}
-			// shearing constraints
-			if (i > 0 && j > 0) { // diagonal left
-				o = &this->point_masses[(i - 1) * this->num_width_points + (j - 1)];
-				this->springs.emplace_back(Spring(o, p, SHEARING));
-			}
-			if (i > 0 && j < (this->num_width_points - 1)) { // diagonal right
-				o = &this->point_masses[(i - 1) * this->num_width_points + (j + 1)];
-				this->springs.emplace_back(Spring(o, p, SHEARING));
-			}
-			// bending constraints
-			if (j > 1) { // left
-				o = &this->point_masses[i * this->num_width_points + (j - 2)];
-				this->springs.emplace_back(Spring(o, p, BENDING));
-			}
-			if (i > 1) { // top
-				o = &this->point_masses[(i - 2) * this->num_width_points + j];
-				this->springs.emplace_back(Spring(o, p, BENDING));
-			}
-		}
-	}
+//	for (int i = 0; i < this->num_height_points; i++) {
+//		for (int j = 0; j < this->num_width_points; j++) {
+//			PointMass* p = &this->point_masses[i * this->num_width_points + j];
+//			PointMass* o;
+//			// structural constraints
+//			if (j > 0) { // left
+//				o = &this->point_masses[i * this->num_width_points + (j - 1)];
+//				this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+//			}
+//			if (i > 0) { // top
+//				o = &this->point_masses[(i - 1) * this->num_width_points + j];
+//				this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+//			}
+//			// shearing constraints
+//			if (i > 0 && j > 0) { // diagonal left
+//				o = &this->point_masses[(i - 1) * this->num_width_points + (j - 1)];
+//				this->springs.emplace_back(Spring(o, p, SHEARING));
+//			}
+//			if (i > 0 && j < (this->num_width_points - 1)) { // diagonal right
+//				o = &this->point_masses[(i - 1) * this->num_width_points + (j + 1)];
+//				this->springs.emplace_back(Spring(o, p, SHEARING));
+//			}
+//			// bending constraints
+//			if (j > 1) { // left
+//				o = &this->point_masses[i * this->num_width_points + (j - 2)];
+//				this->springs.emplace_back(Spring(o, p, BENDING));
+//			}
+//			if (i > 1) { // top
+//				o = &this->point_masses[(i - 2) * this->num_width_points + j];
+//				this->springs.emplace_back(Spring(o, p, BENDING));
+//			}
+//		}
+//	}
 }
 
 void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParameters* cp,
@@ -242,13 +326,13 @@ void Cloth::reset() {
 
 void Cloth::buildClothMesh() {
 	if (point_masses.size() == 0) return;
-
+    
 	ClothMesh* clothMesh = new ClothMesh();
 	vector<Triangle*> triangles;
-
+    
 	// Create vector of triangles
 	for (int y = 0; y < num_height_points - 1; y++) {
-		for (int x = 0; x < num_width_points - 1; x++) {
+		for (int x = 0; x < num_width_points; x++) {
 			PointMass* pm = &point_masses[y * num_width_points + x];
 			// Get neighboring point masses:
 			/*                      *
@@ -265,19 +349,29 @@ void Cloth::buildClothMesh() {
 			 *                      *
 			 */
 
-			float u_min = x;
-			u_min /= num_width_points - 1;
-			float u_max = x + 1;
-			u_max /= num_width_points - 1;
-			float v_min = y;
-			v_min /= num_height_points - 1;
-			float v_max = y + 1;
-			v_max /= num_height_points - 1;
-
-			PointMass* pm_A = pm;
-			PointMass* pm_B = pm + 1;
-			PointMass* pm_C = pm + num_width_points;
-			PointMass* pm_D = pm + num_width_points + 1;
+//			float u_min = x;
+//			u_min /= num_width_points - 1;
+//			float u_max = x + 1;
+//			u_max /= num_width_points - 1;
+            float u_min = x;
+            u_min /= num_width_points;
+            float u_max = x + 1;
+            u_max /= num_width_points;
+            float v_min = y;
+            v_min /= num_height_points;
+            float v_max = y + 1;
+            v_max /= num_height_points;
+            PointMass* pm_A = pm;
+            PointMass* pm_B = pm + 1;
+            PointMass* pm_C = pm + num_width_points;
+            PointMass* pm_D = pm + num_width_points + 1;
+            if (x + 1 == num_width_points) {
+                PointMass* pm_A = pm;
+                PointMass* pm_B = &point_masses[y * num_width_points];
+                PointMass* pm_C = pm + num_width_points;
+                PointMass* pm_D = pm_B + num_width_points;
+                
+            }
 
 			Vector3D uv_A = Vector3D(u_min, v_min, 0);
 			Vector3D uv_B = Vector3D(u_max, v_min, 0);
@@ -292,6 +386,27 @@ void Cloth::buildClothMesh() {
 				uv_B, uv_C, uv_D));
 		}
 	}
+//    for (int x = 0; x < num_width_points; x++) {
+//        PointMass* pm = &point_masses[num_width_points + x];
+//        PointMass* pm_C = pm;
+//        PointMass* pm_B = &point_masses[num_width_points * num_height_points];
+//        PointMass* pm_D = pm + 1;
+//        float u_min = x;
+//        u_min /= num_width_points;
+//        float u_max = x + 1;
+//        u_max /= num_width_points;
+//        float v_min = 0.0;
+//        v_min /= num_height_points;
+//        float v_max = 1;
+//        v_max /= num_height_points;
+////        Vector3D uv_A = Vector3D(u_min, v_min, 0);
+//        Vector3D uv_B = Vector3D(u_max, v_min, 0);
+//        Vector3D uv_C = Vector3D(u_min, v_max, 0);
+//        Vector3D uv_D = Vector3D(u_max, v_max, 0);
+//        triangles.push_back(new Triangle(pm_B, pm_C, pm_D,
+//            uv_B, uv_C, uv_D));
+//
+//    }
 
 	// For each triangle in row-order, create 3 edges and 3 internal halfedges
 	for (int i = 0; i < triangles.size(); i++) {
@@ -336,8 +451,11 @@ void Cloth::buildClothMesh() {
 	// twin pointers
 
 	// Convenient variables for math
-	int num_height_tris = (num_height_points - 1) * 2;
-	int num_width_tris = (num_width_points - 1) * 2;
+//	int num_height_tris = (num_height_points - 1) * 2;
+//	int num_width_tris = (num_width_points - 1) * 2;
+    int num_height_tris = (num_height_points - 1) * 2;
+    int num_width_tris = (num_width_points) * 2;
+
 
 	bool topLeft = true;
 	for (int i = 0; i < triangles.size(); i++) {
@@ -355,8 +473,8 @@ void Cloth::buildClothMesh() {
 
 			// Get triangle above, if it exists
 			if (i >= num_width_tris) { // Not a top-most triangle
-				Triangle* temp = triangles[i - num_width_tris + 1];
-				t->pm3->halfedge->twin = temp->pm2->halfedge;
+                Triangle* temp = triangles[i - num_width_tris + 1];
+                t->pm3->halfedge->twin = temp->pm2->halfedge;
 			}
 			else {
 				t->pm3->halfedge->twin = nullptr;
