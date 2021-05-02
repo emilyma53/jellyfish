@@ -64,14 +64,14 @@ void Cloth::buildGrid() {
         
     // Pointmasses for bell of jellyfish;
     int lastIndexBell = num_width_points * num_height_points - 1;
-//    num_height_points += 1;
+    num_height_points += 1;
     for (int i = 0; i < num_height_points; i++) {
         for (int j = 0; j < num_width_points; j++) {
-//            if (i == num_height_points - 1) {
-//                Vector3D pos = this->point_masses[lastIndexBell - num_width_points - 1 + j].position;
-//                pos.z -= 4.0;
-//                this->point_masses.emplace_back(PointMass(pos, false));
-//            } else {
+            if (i == num_height_points - 1) {
+                Vector3D pos = this->point_masses[lastIndexBell - num_width_points + 1 + j].position;
+                pos.z -= 4.0;
+                this->point_masses.emplace_back(PointMass(pos, false));
+            } else {
                 double r = R[i];
                 double theta = double(j) * (2.0 * PI / T[i]);
                 double x = r * cos(theta);
@@ -79,7 +79,7 @@ void Cloth::buildGrid() {
                 double z = -.1*(R[i] * R[i]);
                 Vector3D pos = Vector3D(x, y, z);
                 this->point_masses.emplace_back(PointMass(pos, false));
-//            }
+            }
         }
     }
     
@@ -93,7 +93,7 @@ void Cloth::buildGrid() {
 //    }
 
     // Ring Springs
-    for (int i = 0; i < num_height_points; i++) {
+    for (int i = 0; i < num_height_points - 1; i++) {
         for (int j = 0; j < num_width_points; j++) {
             if (j == 0) continue;
             int index = num_width_points * i + j;
@@ -455,7 +455,6 @@ void Cloth::buildClothMesh() {
 //	int num_width_tris = (num_width_points - 1) * 2;
     int num_height_tris = (num_height_points - 1) * 2;
     int num_width_tris = (num_width_points) * 2;
-
 
 	bool topLeft = true;
 	for (int i = 0; i < triangles.size(); i++) {
