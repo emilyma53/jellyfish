@@ -252,9 +252,16 @@ void ClothSimulator::drawContents() {
     
   if (!is_paused) {
     vector<Vector3D> external_accelerations = {gravity};
-
+      bool contract = true;
     for (int i = 0; i < simulation_steps; i++) {
-      cloth->simulate(frames_per_sec, simulation_steps, cp, external_accelerations, collision_objects);
+        if (i % 15 == 0) {
+            if (contract) {
+                contract = false;
+            } else {
+                contract = true;
+            }
+        }
+      cloth->simulate(frames_per_sec, simulation_steps, cp, external_accelerations, collision_objects, contract, 50);
     }
   }
 
