@@ -58,16 +58,24 @@ void Cloth::buildGrid() {
     this->point_masses = std::vector<PointMass>();
     this->springs = std::vector<Spring>();
     std::vector<double> T {20.0,20.0,20.0,20.0,20.0,20.0,20.0};
-    std::vector<double> R {.0001, .25, .75, 1.25, 1.75, 2.25, 2.75};
+    std::vector<double> R {.1, .25, .75, 1.25, 1.75, 2.25, 2.4};
     num_width_points = T[0];
     num_height_points = R.size();
         
-    // Pointmasses for bell of jellyfish
-    for (int i = 0; i < num_height_points + 1; i++) {
+    // Pointmasses for bell of jellyfish;
+    int lastIndexBell = num_width_points * num_height_points - 1;
+    num_height_points += 1;
+    for (int i = 0; i < num_height_points; i++) {
         for (int j = 0; j < num_width_points; j++) {
-            if (i == num_height_points) {
-                Vector3D pos = this->point_masses[num_width_points * num_height_points - 1 + j].position;
-                pos.z -= 1.0;
+//<<<<<<< HEAD
+//            if (i == num_height_points) {
+//                Vector3D pos = this->point_masses[num_width_points * num_height_points - 1 + j].position;
+//                pos.z -= 1.0;
+//=======
+            if (i == num_height_points - 1) {
+                Vector3D pos = this->point_masses[lastIndexBell - num_width_points + 1 + j].position;
+                pos.z -= 4.0;
+//>>>>>>> a16f61cb425e1684a98c93fbb4cd497e363b34c3
                 this->point_masses.emplace_back(PointMass(pos, false));
             } else {
                 double r = R[i];
@@ -107,15 +115,15 @@ void Cloth::buildGrid() {
     
     // Vertical springs
     // NOTE: cases an assertion error when toggling spring types in simulator
-//    for (int i = 0; i < num_height_points; i++) {
-//        for (int j = 0; j < num_width_points; j++) {
-//            if (i == num_height_points - 1) continue;
-//            int index = num_width_points * i + j;
-//            PointMass* o = &this->point_masses[index];
-//            PointMass* p = &this->point_masses[index + num_width_points];
-//            this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-//        }
-//    }
+    for (int i = 0; i < num_height_points; i++) {
+        for (int j = 0; j < num_width_points; j++) {
+            if (i == num_height_points - 1) continue;
+            int index = num_width_points * i + j;
+            PointMass* o = &this->point_masses[index];
+            PointMass* p = &this->point_masses[index + num_width_points];
+            this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+        }
+    }
     
     // Vertical springs for tentacles
 //    for (int i = 0; i < 1; i++) {
@@ -180,8 +188,9 @@ void Cloth::buildGrid() {
 }
 
 void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParameters* cp,
-	vector<Vector3D> external_accelerations,
-	vector<CollisionObject*>* collision_objects) {
+	vector<Vector3D> external_accelerations, vector<CollisionObject*>* collision_objects, bool contract, double steps) {
+//    std::cout << simulation_steps << '\n';
+    // simulation steps = 30
 	double mass = width * height * cp->density / num_width_points / num_height_points;
 	double delta_t = 1.0f / frames_per_sec / simulation_steps;
 
@@ -194,6 +203,31 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
 			pm->forces += mass * a;
 		}
 	}
+    
+    for (int i = 0; i < num_width_points; i++) {
+        for (int j = 1; j < num_height_points; j++) {
+            PointMass* pm = &this->point_masses[num_width_points * j + i];
+            Vector3D force;
+//            if (contract) {
+                force = - pm->position;
+//                force.z = 0.0;
+//            } else {
+//                force = pm->position;
+////                force.z = 0.0;
+//            }
+//            force = - pm->position;
+//                            force.z = 0.0;
+            force.normalize();
+            if (j == num_height_points - 2) {
+                pm->forces += force * 2.0;
+//            } else if (j == num_height_points - 1) {
+//                pm->forces += force * 1.5;
+            } else {
+                pm->forces += force * (double) j/( 5.0);
+            }
+            
+        }
+    }
 
 	// apply spring forces to each mass
 	for (int i = 0; i < this->springs.size(); i++) {
@@ -212,7 +246,7 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
 		}
 		else if (s->spring_type == BENDING && cp->enable_bending_constraints) {
 			Vector3D dp = s->pm_b->position - s->pm_a->position;
-			Vector3D fs = 0.2 * cp->ks * (dp.norm() - s->rest_length) * dp.unit();
+			Vector3D fs = 0.8 * cp->ks * (dp.norm() - s->rest_length) * dp.unit();
 			s->pm_a->forces += fs;
 			s->pm_b->forces -= fs;
 		}
@@ -243,25 +277,25 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
 
 	// TODO (Part 2): Constrain the changes to be such that the spring does not change
 	// in length more than 10% per timestep [Provot 1995].
-	for (int i = 0; i < this->springs.size(); i++) {
-		Spring* s = &this->springs[i];
-		Vector3D dp = s->pm_b->position - s->pm_a->position;
-		double length = dp.norm();
-		if (length > s->rest_length * 1.1) {
-			Vector3D maxspring = s->rest_length * 1.1 * dp.unit();
-			if (s->pm_a->pinned) {
-				s->pm_b->position = s->pm_a->position + maxspring;
-			}
-			else if (s->pm_b->pinned) {
-				s->pm_a->position = s->pm_b->position - maxspring;
-			}
-			else {
-				Vector3D midpt = (s->pm_a->position + s->pm_b->position) / 2;
-				s->pm_a->position = midpt - maxspring / 2;
-				s->pm_b->position = midpt + maxspring / 2;
-			}
-		}
-	}
+//	for (int i = 0; i < this->springs.size(); i++) {
+//		Spring* s = &this->springs[i];
+//		Vector3D dp = s->pm_b->position - s->pm_a->position;
+//		double length = dp.norm();
+//		if (length > s->rest_length * 1.1) {
+//			Vector3D maxspring = s->rest_length * 1.1 * dp.unit();
+//			if (s->pm_a->pinned) {
+//				s->pm_b->position = s->pm_a->position + maxspring;
+//			}
+//			else if (s->pm_b->pinned) {
+//				s->pm_a->position = s->pm_b->position - maxspring;
+//			}
+//			else {
+//				Vector3D midpt = (s->pm_a->position + s->pm_b->position) / 2;
+//				s->pm_a->position = midpt - maxspring / 2;
+//				s->pm_b->position = midpt + maxspring / 2;
+//			}
+//		}
+//	}
 }
 
 void Cloth::build_spatial_map() {
@@ -326,10 +360,10 @@ void Cloth::reset() {
 
 void Cloth::buildClothMesh() {
 	if (point_masses.size() == 0) return;
-
+    
 	ClothMesh* clothMesh = new ClothMesh();
 	vector<Triangle*> triangles;
-
+    
 	// Create vector of triangles
 	for (int y = 0; y < num_height_points - 1; y++) {
 		for (int x = 0; x < num_width_points; x++) {
@@ -455,7 +489,6 @@ void Cloth::buildClothMesh() {
 //	int num_width_tris = (num_width_points - 1) * 2;
     int num_height_tris = (num_height_points - 1) * 2;
     int num_width_tris = (num_width_points) * 2;
-
 
 	bool topLeft = true;
 	for (int i = 0; i < triangles.size(); i++) {
