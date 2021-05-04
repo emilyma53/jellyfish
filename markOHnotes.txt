@@ -1,0 +1,21 @@
+Model jellyfish as multiple objects
+-----------------------------------------------------
+
+ClothSimulator:draw_____()
+- shader.uploadAttrib()
+- shader.drawArray()
+
+try multiple VertexArrays (maybe multiple shaders)
+- bell, tentacle1, tentacle2, etc.
+
+look into OpenGL life cycle
+
+
+
+fix translucent texture shader
+-----------------------------------------------------
+
+try commenting out glEnable(GL_DEPTH_TEST) in ClothSimulator:drawContents()
+-> no more culling but now layering issues
+
+ask bob

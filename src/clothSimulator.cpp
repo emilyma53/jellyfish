@@ -162,7 +162,12 @@ ClothSimulator::ClothSimulator(std::string project_root, Screen *screen)
   this->load_textures();
 
   glEnable(GL_PROGRAM_POINT_SIZE);
+
+
+  // possibly comment out this line for translucency
   glEnable(GL_DEPTH_TEST);
+
+
 }
 
 ClothSimulator::~ClothSimulator() {
@@ -239,8 +244,12 @@ void ClothSimulator::init() {
 bool ClothSimulator::isAlive() { return is_alive; }
 
 void ClothSimulator::drawContents() {
-  glEnable(GL_DEPTH_TEST);
 
+
+  // possibly comment out this line for translucency
+  //glEnable(GL_DEPTH_TEST);
+
+    
   if (!is_paused) {
     vector<Vector3D> external_accelerations = {gravity};
 
