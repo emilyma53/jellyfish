@@ -58,7 +58,8 @@ void Cloth::buildGrid() {
     this->point_masses = std::vector<PointMass>();
     this->springs = std::vector<Spring>();
     std::vector<double> T {20.0,20.0,20.0,20.0,20.0,20.0,20.0};
-    std::vector<double> R {.1, .25, .75, 1.25, 1.75, 2.25, 2.4};
+//    std::vector<double> R {.1, .25, .75, 1.25, 1.75, 2.25, 2.4};
+    std::vector<double> R {.1, .15, .3, .6, .9, 1.2, 1.3};
     num_width_points = T[0];
     num_height_points = R.size();
         
@@ -74,7 +75,7 @@ void Cloth::buildGrid() {
 //=======
             if (i == num_height_points - 1) {
                 Vector3D pos = this->point_masses[lastIndexBell - num_width_points + 1 + j].position;
-                pos.z -= 4.0;
+                pos.z -= 1.0;
 //>>>>>>> a16f61cb425e1684a98c93fbb4cd497e363b34c3
                 this->point_masses.emplace_back(PointMass(pos, false));
             } else {
@@ -108,7 +109,7 @@ void Cloth::buildGrid() {
             this->springs.emplace_back(Spring(o, p, STRUCTURAL));
             if (j + 1 == int(T[i])) {
                 o = &this->point_masses[index - (num_width_points - 1)];
-                this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+                this->springs.emplace_back(Spring(o, p, BENDING));
             }
         }
     }
@@ -121,7 +122,7 @@ void Cloth::buildGrid() {
             int index = num_width_points * i + j;
             PointMass* o = &this->point_masses[index];
             PointMass* p = &this->point_masses[index + num_width_points];
-            this->springs.emplace_back(Spring(o, p, STRUCTURAL));
+            this->springs.emplace_back(Spring(o, p, BENDING));
         }
     }
     
@@ -246,7 +247,7 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
 		}
 		else if (s->spring_type == BENDING && cp->enable_bending_constraints) {
 			Vector3D dp = s->pm_b->position - s->pm_a->position;
-			Vector3D fs = 0.8 * cp->ks * (dp.norm() - s->rest_length) * dp.unit();
+			Vector3D fs = 0.1 * cp->ks * (dp.norm() - s->rest_length) * dp.unit();
 			s->pm_a->forces += fs;
 			s->pm_b->forces -= fs;
 		}
