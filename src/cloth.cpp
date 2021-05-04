@@ -113,6 +113,21 @@ void Cloth::buildGrid() {
             }
         }
     }
+
+    // Bending ring springs
+    for (int i = 0; i < num_height_points - 1; i++) {
+        for (int j = 0; j < num_width_points; j++) {
+            if (j <= 1) continue;
+            int index = num_width_points * i + j;
+            PointMass* o = &this->point_masses[index - 2];
+            PointMass* p = &this->point_masses[index];
+            this->springs.emplace_back(Spring(o, p, BENDING));
+            if (j + 1 == int(T[i])) {
+                o = &this->point_masses[index - (num_width_points - 1)];
+                this->springs.emplace_back(Spring(o, p, BENDING));
+            }
+        }
+    }
     
     // Vertical springs
     // NOTE: cases an assertion error when toggling spring types in simulator
