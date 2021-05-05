@@ -111,15 +111,12 @@ void Cloth::buildGrid() {
     // Bending ring springs
     for (int i = 0; i < num_height_points - 1; i++) {
         for (int j = 0; j < num_width_points; j++) {
-            if (j <= 1) continue;
             int index = num_width_points * i + j;
-            PointMass* o = &this->point_masses[index - 2];
-            PointMass* p = &this->point_masses[index];
+            int j2 = (j + 2) % num_width_points;
+            int index2 = num_width_points * i + j2;
+            PointMass* o = &this->point_masses[index];
+            PointMass* p = &this->point_masses[index2];
             this->springs.emplace_back(Spring(o, p, BENDING));
-            if (j + 1 == int(T[i])) {
-                o = &this->point_masses[index - (num_width_points - 1)];
-                this->springs.emplace_back(Spring(o, p, BENDING));
-            }
         }
     }
     
