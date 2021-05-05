@@ -121,6 +121,20 @@ void Cloth::buildGrid() {
         }
     }
 
+    // vertical bending springs
+    // NOTE: i < num_height_point - 3 to avoid bending springs to tentacles
+    for (int i = 0; i < num_height_points - 3; i++) {
+        for (int j = 0; j < num_width_points; j++) {
+            int index = num_width_points * i + j;
+            int i2 = (i + 2) % num_height_points;
+            int index2 = num_width_points * i2 + j;
+            PointMass* o = &this->point_masses[index];
+            PointMass* p = &this->point_masses[index2];
+            this->springs.emplace_back(Spring(o, p, BENDING));
+        }
+    }
+
+
     // Shearing springs
     // NOTE: i < num_height_point - 2 to avoid shearing springs to tentacles
     for (int i = 0; i < num_height_points - 2; i++) {
