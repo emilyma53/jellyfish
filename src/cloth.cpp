@@ -124,6 +124,23 @@ void Cloth::buildGrid() {
             this->springs.emplace_back(Spring(o, p, BENDING));
         }
     }
+
+    // Shearing springs
+    // NOTE: i < num_height_point - 2 to avoid shearing springs to tentacles
+    for (int i = 0; i < num_height_points - 2; i++) {
+        for (int j = 0; j < num_width_points; j++) {
+            int s1_index1 = num_width_points * i + j;
+            int s1_index2 = num_width_points * (i + 1) + ((j + 1) % num_width_points);
+            int s2_index1 = num_width_points * (i + 1) + j;
+            int s2_index2 = num_width_points * i + ((j + 1) % num_width_points);
+            PointMass* o1 = &this->point_masses[s1_index1];
+            PointMass* p1 = &this->point_masses[s1_index2];
+            PointMass* o2 = &this->point_masses[s2_index1];
+            PointMass* p2 = &this->point_masses[s2_index2];
+            this->springs.emplace_back(Spring(o1, p1, SHEARING));
+            this->springs.emplace_back(Spring(o2, p2, SHEARING));
+        }
+    }
     
     // Vertical springs
     // NOTE: cases an assertion error when toggling spring types in simulator
