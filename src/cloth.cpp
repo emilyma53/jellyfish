@@ -9,7 +9,7 @@
 
 using namespace std;
 
-Cloth::Cloth(double width, double height, int num_width_points,
+Cloth::Cloth(int contraction_time, double width, double height, int num_width_points,
 	int num_height_points, float thickness) {
 	this->width = width;
 	this->height = height;
@@ -58,7 +58,9 @@ void Cloth::buildGrid() {
     this->point_masses = std::vector<PointMass>();
     this->springs = std::vector<Spring>();
     std::vector<double> T {20.0,20.0,20.0,20.0,20.0,20.0,20.0};
-    std::vector<double> R {.1, .25, .75, 1.25, 1.75, 2.25, 2.4};
+//    std::vector<double> R {.1, .25, .75, 1.25, 1.75, 2.25, 2.4};
+//    std::vector<double> R {.1, .15, .3, .6, .9, 1.2, 1.25};
+    std::vector<double> R {.1, .2, .4, .6, .8, 1., 1.15};
     num_width_points = T[0];
     num_height_points = R.size();
         
@@ -67,22 +69,16 @@ void Cloth::buildGrid() {
     num_height_points += 1;
     for (int i = 0; i < num_height_points; i++) {
         for (int j = 0; j < num_width_points; j++) {
-//<<<<<<< HEAD
-//            if (i == num_height_points) {
-//                Vector3D pos = this->point_masses[num_width_points * num_height_points - 1 + j].position;
-//                pos.z -= 1.0;
-//=======
             if (i == num_height_points - 1) {
                 Vector3D pos = this->point_masses[lastIndexBell - num_width_points + 1 + j].position;
-                pos.z -= 4.0;
-//>>>>>>> a16f61cb425e1684a98c93fbb4cd497e363b34c3
+                pos.z -= 0.5;
                 this->point_masses.emplace_back(PointMass(pos, false));
             } else {
                 double r = R[i];
                 double theta = double(j) * (2.0 * PI / T[i]);
                 double x = r * cos(theta);
                 double y = r * sin(theta);
-                double z = -.3*(R[i] * R[i]);
+                double z = -.5*(R[i] * R[i]);
                 Vector3D pos = Vector3D(x, y, z);
                 this->point_masses.emplace_back(PointMass(pos, false));
             }
@@ -110,6 +106,35 @@ void Cloth::buildGrid() {
                 o = &this->point_masses[index - (num_width_points - 1)];
                 this->springs.emplace_back(Spring(o, p, STRUCTURAL));
             }
+        }
+    }
+
+    // Bending ring springs
+    for (int i = 0; i < num_height_points - 1; i++) {
+        for (int j = 0; j < num_width_points; j++) {
+            int index = num_width_points * i + j;
+            int j2 = (j + 2) % num_width_points;
+            int index2 = num_width_points * i + j2;
+            PointMass* o = &this->point_masses[index];
+            PointMass* p = &this->point_masses[index2];
+            this->springs.emplace_back(Spring(o, p, BENDING));
+        }
+    }
+
+    // Shearing springs
+    // NOTE: i < num_height_point - 2 to avoid shearing springs to tentacles
+    for (int i = 0; i < num_height_points - 2; i++) {
+        for (int j = 0; j < num_width_points; j++) {
+            int s1_index1 = num_width_points * i + j;
+            int s1_index2 = num_width_points * (i + 1) + ((j + 1) % num_width_points);
+            int s2_index1 = num_width_points * (i + 1) + j;
+            int s2_index2 = num_width_points * i + ((j + 1) % num_width_points);
+            PointMass* o1 = &this->point_masses[s1_index1];
+            PointMass* p1 = &this->point_masses[s1_index2];
+            PointMass* o2 = &this->point_masses[s2_index1];
+            PointMass* p2 = &this->point_masses[s2_index2];
+            this->springs.emplace_back(Spring(o1, p1, SHEARING));
+            this->springs.emplace_back(Spring(o2, p2, SHEARING));
         }
     }
     
@@ -188,9 +213,16 @@ void Cloth::buildGrid() {
 }
 
 void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParameters* cp,
-	vector<Vector3D> external_accelerations, vector<CollisionObject*>* collision_objects, bool contract, double steps) {
-//    std::cout << simulation_steps << '\n';
-    // simulation steps = 30
+	vector<Vector3D> external_accelerations, vector<CollisionObject*>* collision_objects) {
+    if (contraction_time == 0) {
+        contraction_time = 4000;
+        if (contract) {
+            contract = false;
+        } else {
+            contract = true;
+        }
+    }
+    contraction_time -= 1;
 	double mass = width * height * cp->density / num_width_points / num_height_points;
 	double delta_t = 1.0f / frames_per_sec / simulation_steps;
 
@@ -208,22 +240,26 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
         for (int j = 1; j < num_height_points; j++) {
             PointMass* pm = &this->point_masses[num_width_points * j + i];
             Vector3D force;
-//            if (contract) {
-                force = - pm->position;
-//                force.z = 0.0;
-//            } else {
-//                force = pm->position;
-////                force.z = 0.0;
-//            }
+            Vector3D center = (point_masses[0].position + point_masses[9].position)/2.0;
+            
+            if (contract) {
+                center.z += 0.5;
+                force = center - pm->position;
+            } else {
+                center.z -= 0.25;
+                force = - center + pm->position;
+            }
 //            force = - pm->position;
 //                            force.z = 0.0;
             force.normalize();
             if (j == num_height_points - 2) {
+                
+                pm->forces += force * 10.0;
+            } else if (j == num_height_points - 1) {
                 pm->forces += force * 2.0;
-//            } else if (j == num_height_points - 1) {
-//                pm->forces += force * 1.5;
             } else {
-                pm->forces += force * (double) j/( 5.0);
+                pm->forces += force * (double) (j) /( 4.0);
+//                force.z = force.z/2.0;
             }
             
         }
@@ -246,7 +282,7 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
 		}
 		else if (s->spring_type == BENDING && cp->enable_bending_constraints) {
 			Vector3D dp = s->pm_b->position - s->pm_a->position;
-			Vector3D fs = 0.8 * cp->ks * (dp.norm() - s->rest_length) * dp.unit();
+			Vector3D fs = 0.5 * cp->ks * (dp.norm() - s->rest_length) * dp.unit();
 			s->pm_a->forces += fs;
 			s->pm_b->forces -= fs;
 		}
@@ -367,6 +403,7 @@ void Cloth::buildClothMesh() {
 	// Create vector of triangles
 	for (int y = 0; y < num_height_points - 1; y++) {
 		for (int x = 0; x < num_width_points; x++) {
+//            if (y == num_height_points - 2 && x == num_width_points - 1) continue;
 			PointMass* pm = &point_masses[y * num_width_points + x];
 			// Get neighboring point masses:
 			/*                      *
@@ -392,18 +429,22 @@ void Cloth::buildClothMesh() {
             float u_max = x + 1;
             u_max /= num_width_points;
             float v_min = y;
-            v_min /= num_height_points;
+            v_min /= num_height_points - 1;
             float v_max = y + 1;
-            v_max /= num_height_points;
+            v_max /= num_height_points - 1;
             PointMass* pm_A = pm;
             PointMass* pm_B = pm + 1;
             PointMass* pm_C = pm + num_width_points;
             PointMass* pm_D = pm + num_width_points + 1;
             if (x + 1 == num_width_points) {
                 PointMass* pm_A = pm;
+//                PointMass* pm_B = &point_masses[y * num_width_points];
+//                PointMass* pm_C = pm + num_width_points;
+//                PointMass* pm_D = pm_B + num_width_points;
                 PointMass* pm_B = &point_masses[y * num_width_points];
                 PointMass* pm_C = pm + num_width_points;
                 PointMass* pm_D = pm_B + num_width_points;
+
                 
             }
 
@@ -444,6 +485,7 @@ void Cloth::buildClothMesh() {
 
 	// For each triangle in row-order, create 3 edges and 3 internal halfedges
 	for (int i = 0; i < triangles.size(); i++) {
+//        if (i == triangles.size() - 1) continue;
 		Triangle* t = triangles[i];
 
 		// Allocate new halfedges on heap

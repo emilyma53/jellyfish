@@ -29,6 +29,7 @@ struct ClothParameters {
   ~ClothParameters() {}
 
   // Global simulation parameters
+//    int contraction_time;
 
   bool enable_structural_constraints;
   bool enable_shearing_constraints;
@@ -43,7 +44,7 @@ struct ClothParameters {
 
 struct Cloth {
   Cloth() {}
-  Cloth(double width, double height, int num_width_points,
+  Cloth(int contraction_time, double width, double height, int num_width_points,
         int num_height_points, float thickness);
   ~Cloth();
 
@@ -51,7 +52,7 @@ struct Cloth {
 
   void simulate(double frames_per_sec, double simulation_steps, ClothParameters *cp,
                 vector<Vector3D> external_accelerations,
-                vector<CollisionObject *> *collision_objects, bool contract, double steps);
+                vector<CollisionObject *> *collision_objects);
 
   void reset();
   void buildClothMesh();
@@ -61,6 +62,8 @@ struct Cloth {
   float hash_position(Vector3D pos);
 
   // Cloth properties
+    int contraction_time;
+    bool contract;
   double width;
   double height;
   int num_width_points;
