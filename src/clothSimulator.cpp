@@ -166,7 +166,7 @@ ClothSimulator::ClothSimulator(std::string project_root, Screen *screen)
 
   // possibly comment out this line for translucency
   glEnable(GL_DEPTH_TEST);
-
+  glDisable(GL_CULL_FACE);
 
 }
 
@@ -247,8 +247,8 @@ void ClothSimulator::drawContents() {
 
 
   // possibly comment out this line for translucency
-  //glEnable(GL_DEPTH_TEST);
-
+  glEnable(GL_DEPTH_TEST);
+  glDisable(GL_CULL_FACE);
     
   if (!is_paused) {
     vector<Vector3D> external_accelerations = {gravity};
