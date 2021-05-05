@@ -187,6 +187,7 @@ bool loadObjectsFromFile(string filename, Cloth *cloth, ClothParameters *cp, vec
       float thickness;
       e_orientation orientation;
       vector<vector<int>> pinned;
+        int contraction_time;
 
       auto it_width = object.find("width");
       if (it_width != object.end()) {
@@ -246,6 +247,8 @@ bool loadObjectsFromFile(string filename, Cloth *cloth, ClothParameters *cp, vec
       cloth->thickness = thickness;
       cloth->orientation = orientation;
       cloth->pinned = pinned;
+        cloth->contraction_time = 8000;
+        cloth->contract = true;
 
       // Cloth parameters
       bool enable_structural_constraints, enable_shearing_constraints, enable_bending_constraints;
