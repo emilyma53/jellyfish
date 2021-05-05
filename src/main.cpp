@@ -247,7 +247,7 @@ bool loadObjectsFromFile(string filename, Cloth *cloth, ClothParameters *cp, vec
       cloth->thickness = thickness;
       cloth->orientation = orientation;
       cloth->pinned = pinned;
-        cloth->contraction_time = 8000;
+        cloth->contraction_time = 4000;
         cloth->contract = true;
 
       // Cloth parameters
