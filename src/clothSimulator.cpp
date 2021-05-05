@@ -329,8 +329,8 @@ void ClothSimulator::drawWireframe(GLShader &shader) {
       2 * cloth->num_width_points * cloth->num_height_points -
       cloth->num_width_points; //  - cloth->num_height_points
   int num_shear_springs =
-      2 * (cloth->num_width_points - 1) * (cloth->num_height_points - 1);
-  int num_bending_springs = num_structural_springs; //  - cloth->num_height_points  - cloth->num_width_points
+      2 * (cloth->num_width_points) * (cloth->num_height_points - 1); // (cloth->num_height_points - 1)
+  int num_bending_springs = num_structural_springs - cloth->num_width_points; //  - cloth->num_height_points  - cloth->num_width_points
 
   int num_springs = cp->enable_structural_constraints * num_structural_springs +
                     cp->enable_shearing_constraints * num_shear_springs +
@@ -376,7 +376,7 @@ void ClothSimulator::drawWireframe(GLShader &shader) {
 }
 
 void ClothSimulator::drawNormals(GLShader &shader) {
-  int num_tris = cloth->clothMesh->triangles.size();
+  int num_tris = cloth->clothMesh->triangles.size() - 1;
 
   MatrixXf positions(4, num_tris * 3);
   MatrixXf normals(4, num_tris * 3);
@@ -408,7 +408,7 @@ void ClothSimulator::drawNormals(GLShader &shader) {
 }
 
 void ClothSimulator::drawPhong(GLShader &shader) {
-  int num_tris = cloth->clothMesh->triangles.size();
+  int num_tris = cloth->clothMesh->triangles.size() - 1;
 
   MatrixXf positions(4, num_tris * 3);
   MatrixXf normals(4, num_tris * 3);

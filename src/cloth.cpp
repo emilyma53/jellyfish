@@ -258,7 +258,7 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
             } else if (j == num_height_points - 1) {
                 pm->forces += force * 2.0;
             } else {
-                pm->forces += force * (double) (j) /( 4.0);
+                pm->forces += force * (double) (j) /(4.0);
 //                force.z = force.z/2.0;
             }
             
@@ -444,6 +444,14 @@ void Cloth::buildClothMesh() {
                 PointMass* pm_B = &point_masses[y * num_width_points];
                 PointMass* pm_C = pm + num_width_points;
                 PointMass* pm_D = pm_B + num_width_points;
+//                u_min = x - 1;
+//                u_min /= num_width_points;
+//                u_max = x;
+//                u_max /= num_width_points;
+//                v_min = y;
+//                v_min /= num_height_points - 1;
+//                v_max = y + 1;
+//                v_max /= num_height_points - 1;
 
                 
             }
