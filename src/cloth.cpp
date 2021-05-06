@@ -121,6 +121,20 @@ void Cloth::buildGrid() {
         }
     }
 
+    // vertical bending springs
+    // NOTE: i < num_height_point - 3 to avoid bending springs to tentacles
+    for (int i = 0; i < num_height_points - 3; i++) {
+        for (int j = 0; j < num_width_points; j++) {
+            int index = num_width_points * i + j;
+            int i2 = (i + 2) % num_height_points;
+            int index2 = num_width_points * i2 + j;
+            PointMass* o = &this->point_masses[index];
+            PointMass* p = &this->point_masses[index2];
+            this->springs.emplace_back(Spring(o, p, BENDING));
+        }
+    }
+
+
     // Shearing springs
     // NOTE: i < num_height_point - 2 to avoid shearing springs to tentacles
     for (int i = 0; i < num_height_points - 2; i++) {
@@ -258,7 +272,7 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
             } else if (j == num_height_points - 1) {
                 pm->forces += force * 2.0;
             } else {
-                pm->forces += force * (double) (j) /( 4.0);
+                pm->forces += force * (double) (j) /(4.0);
 //                force.z = force.z/2.0;
             }
             
@@ -444,6 +458,14 @@ void Cloth::buildClothMesh() {
                 PointMass* pm_B = &point_masses[y * num_width_points];
                 PointMass* pm_C = pm + num_width_points;
                 PointMass* pm_D = pm_B + num_width_points;
+//                u_min = x - 1;
+//                u_min /= num_width_points;
+//                u_max = x;
+//                u_max /= num_width_points;
+//                v_min = y;
+//                v_min /= num_height_points - 1;
+//                v_max = y + 1;
+//                v_max /= num_height_points - 1;
 
                 
             }
