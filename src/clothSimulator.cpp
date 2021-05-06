@@ -166,7 +166,6 @@ ClothSimulator::ClothSimulator(std::string project_root, Screen *screen)
 
   // possibly comment out this line for translucency
   glEnable(GL_DEPTH_TEST);
-  glDisable(GL_CULL_FACE);
 
 }
 
@@ -244,12 +243,6 @@ void ClothSimulator::init() {
 bool ClothSimulator::isAlive() { return is_alive; }
 
 void ClothSimulator::drawContents() {
-
-
-  // possibly comment out this line for translucency
-  glEnable(GL_DEPTH_TEST);
-  glDisable(GL_CULL_FACE);
-    
   if (!is_paused) {
     vector<Vector3D> external_accelerations = {gravity};
 //      bool contract = true;
@@ -300,7 +293,7 @@ void ClothSimulator::drawContents() {
     shader.setUniform("u_color", color, false);
     shader.setUniform("u_cam_pos", Vector3f(cam_pos.x, cam_pos.y, cam_pos.z), false);
     shader.setUniform("u_light_pos", Vector3f(0.5, 2, 2), false);
-    shader.setUniform("u_light_intensity", Vector3f(3, 3, 3), false);
+    shader.setUniform("u_light_intensity", Vector3f(5, 5, 5), false);
     shader.setUniform("u_texture_1_size", Vector2f(m_gl_texture_1_size.x, m_gl_texture_1_size.y), false);
     shader.setUniform("u_texture_2_size", Vector2f(m_gl_texture_2_size.x, m_gl_texture_2_size.y), false);
     shader.setUniform("u_texture_3_size", Vector2f(m_gl_texture_3_size.x, m_gl_texture_3_size.y), false);
@@ -408,6 +401,17 @@ void ClothSimulator::drawNormals(GLShader &shader) {
 }
 
 void ClothSimulator::drawPhong(GLShader &shader) {
+  glDepthMask(GL_FALSE);
+  glDisable(GL_CULL_FACE);
+  glEnable(GL_BLEND);
+  glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+
+  // multiplicative blending, no layering artifacts but very dark
+  //glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+  // linear interpolation, has layering artifacts but much better colors
+  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
   int num_tris = cloth->clothMesh->triangles.size();
 
   MatrixXf positions(4, num_tris * 3);

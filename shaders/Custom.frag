@@ -36,7 +36,7 @@ void main() {
   float ka = 0.1;
   float ks = 0.5;
   int p = 100;
-  vec3 kd = vec3(u_color)/2;
+  vec3 kd = vec3(u_color);
   vec3 ia = vec3(1.0);
 
   vec3 out_amb = ka * ia;
@@ -67,8 +67,8 @@ void main() {
     forwardTranslucency = ks * u_light_intensity / (r * r) * pow(max(0.0, dot(-l, v)), p);
   }
 
-  vec3 out_tex = vec3(texture(u_texture_1, v_uv))/3;
-  float alpha = 0.4;
+  vec3 out_tex = vec3(texture(u_texture_1, v_uv));
+  float alpha = 0.5;
 
   out_color = vec4(out_tex + out_diff + out_spec + diffuseTranslucency +  forwardTranslucency, alpha / abs(dot(v, n3)));
 }
