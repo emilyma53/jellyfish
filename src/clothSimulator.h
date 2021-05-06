@@ -84,6 +84,10 @@ private:
   GLuint m_gl_texture_3;
   GLuint m_gl_texture_4;
   GLuint m_gl_cubemap_tex;
+    
+    layout (location = 0) in vec3 aPos;
+
+    out vec3 TexCoords;
   
   // OpenGL customizable inputs
   

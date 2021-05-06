@@ -262,7 +262,7 @@ void ClothSimulator::drawContents() {
 
   GLShader &shader = *active_shader.nanogui_shader;
   shader.bind();
-
+    
   // Prepare the camera projection matrix
 
   Matrix4f model;
@@ -270,6 +270,9 @@ void ClothSimulator::drawContents() {
 
   Matrix4f view = getViewMatrix();
   Matrix4f projection = getProjectionMatrix();
+    
+    TexCoords = aPos;
+    gl_Position = projection * view * vec4(aPos, 1.0);
 
   Matrix4f viewProjection = projection * view;
 
