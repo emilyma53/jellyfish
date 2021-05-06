@@ -57,10 +57,10 @@ void Cloth::buildGrid() {
 //	}
     this->point_masses = std::vector<PointMass>();
     this->springs = std::vector<Spring>();
-    std::vector<double> T {20.0,20.0,20.0,20.0,20.0,20.0,20.0};
+    std::vector<double> T {20.0,20.0,20.0,20.0,20.0,20.0,20.0,20.0};
 //    std::vector<double> R {.1, .25, .75, 1.25, 1.75, 2.25, 2.4};
 //    std::vector<double> R {.1, .15, .3, .6, .9, 1.2, 1.25};
-    std::vector<double> R {.1, .2, .4, .6, .8, 1., 1.15};
+    std::vector<double> R {.1, .2, .4, .6, .8, 1., 1.3};
     num_width_points = T[0];
     num_height_points = R.size();
         
@@ -71,14 +71,24 @@ void Cloth::buildGrid() {
         for (int j = 0; j < num_width_points; j++) {
             if (i == num_height_points - 1) {
                 Vector3D pos = this->point_masses[lastIndexBell - num_width_points + 1 + j].position;
-                pos.z -= 0.5;
+                if (j % 2 == 0) {
+                    pos.z -= 0.6;
+                } else {
+                    pos.z -= 1.5;
+                }
+                
                 this->point_masses.emplace_back(PointMass(pos, false));
             } else {
-                double r = R[i];
-                double theta = double(j) * (2.0 * PI / T[i]);
-                double x = r * cos(theta);
-                double y = r * sin(theta);
-                double z = -.5*(R[i] * R[i]);
+                double theta, r, x, y, z;
+                r = R[i];
+                theta = double(j) * (2.0 * PI / T[i]);
+                x = r * cos(theta);
+                y = r * sin(theta);
+                if (i == num_height_points - 2) {
+                    z = -.6*(R[i] * R[i]);
+                } else {
+                    z = -.5*(R[i] * R[i]);
+                }
                 Vector3D pos = Vector3D(x, y, z);
                 this->point_masses.emplace_back(PointMass(pos, false));
             }
@@ -95,7 +105,7 @@ void Cloth::buildGrid() {
 //    }
 
     // Ring Springs
-    for (int i = 0; i < num_height_points - 1; i++) {
+    for (int i = 0; i < num_height_points - 2; i++) {
         for (int j = 0; j < num_width_points; j++) {
             if (j == 0) continue;
             int index = num_width_points * i + j;
@@ -110,7 +120,7 @@ void Cloth::buildGrid() {
     }
 
     // Bending ring springs
-    for (int i = 0; i < num_height_points - 1; i++) {
+    for (int i = 0; i < num_height_points - 3; i++) {
         for (int j = 0; j < num_width_points; j++) {
             int index = num_width_points * i + j;
             int j2 = (j + 2) % num_width_points;
@@ -123,7 +133,7 @@ void Cloth::buildGrid() {
 
     // vertical bending springs
     // NOTE: i < num_height_point - 3 to avoid bending springs to tentacles
-    for (int i = 0; i < num_height_points - 3; i++) {
+    for (int i = 0; i < num_height_points - 4; i++) {
         for (int j = 0; j < num_width_points; j++) {
             int index = num_width_points * i + j;
             int i2 = (i + 2) % num_height_points;
@@ -137,7 +147,7 @@ void Cloth::buildGrid() {
 
     // Shearing springs
     // NOTE: i < num_height_point - 2 to avoid shearing springs to tentacles
-    for (int i = 0; i < num_height_points - 2; i++) {
+    for (int i = 0; i < num_height_points - 3; i++) {
         for (int j = 0; j < num_width_points; j++) {
             int s1_index1 = num_width_points * i + j;
             int s1_index2 = num_width_points * (i + 1) + ((j + 1) % num_width_points);
@@ -254,7 +264,7 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
         for (int j = 1; j < num_height_points; j++) {
             PointMass* pm = &this->point_masses[num_width_points * j + i];
             Vector3D force;
-            Vector3D center = (point_masses[0].position + point_masses[9].position)/2.0;
+            Vector3D center = (point_masses[0].position + point_masses[num_width_points/2.0-1].position)/2.0;
             
             if (contract) {
                 center.z += 0.5;
@@ -266,10 +276,11 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
 //            force = - pm->position;
 //                            force.z = 0.0;
             force.normalize();
-            if (j == num_height_points - 2) {
+            if (j == num_height_points - 3) {
                 
                 pm->forces += force * 10.0;
-            } else if (j == num_height_points - 1) {
+            } else if (j == num_height_points - 2) {
+//                force.z /= 2.0;
                 pm->forces += force * 2.0;
             } else {
                 pm->forces += force * (double) (j) /(4.0);
