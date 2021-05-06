@@ -453,7 +453,8 @@ void ClothSimulator::drawPhong(GLShader &shader) {
   shader.uploadAttrib("in_uv", uvs, false);
   shader.uploadAttrib("in_tangent", tangents, false);
 
-  shader.drawArray(GL_TRIANGLES, 0, num_tris * 3);
+  shader.drawArray(GL_TRIANGLES, 0, num_tris * 3 - 6*20);
+  shader.drawArray(GL_LINES, 0, num_tris * 3);
 }
 
 // ----------------------------------------------------------------------------
