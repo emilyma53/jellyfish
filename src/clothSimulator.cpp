@@ -163,10 +163,8 @@ ClothSimulator::ClothSimulator(std::string project_root, Screen *screen)
 
   glEnable(GL_PROGRAM_POINT_SIZE);
 
-
   // possibly comment out this line for translucency
   glEnable(GL_DEPTH_TEST);
-
 }
 
 ClothSimulator::~ClothSimulator() {
@@ -401,16 +399,27 @@ void ClothSimulator::drawNormals(GLShader &shader) {
 }
 
 void ClothSimulator::drawPhong(GLShader &shader) {
-  glDepthMask(GL_FALSE);
+  //glDepthMask(GL_FALSE);
+  //glDepthFunc(GL_ALWAYS);
   glDisable(GL_CULL_FACE);
   glEnable(GL_BLEND);
-  glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+  
+  glBlendEquation(GL_FUNC_ADD);
+
+  // additive blending, no layering artifacts but very bright
+  //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
   // multiplicative blending, no layering artifacts but very dark
-  //glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  //glBlendFunc(GL_ZERO, GL_SRC_COLOR);
 
   // linear interpolation, has layering artifacts but much better colors
-  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  // versions with alpha components:
+  //glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+  //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  //glBlendFuncSeparate(GL_ZERO, GL_SRC_COLOR, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
   int num_tris = cloth->clothMesh->triangles.size() - 1;
 
