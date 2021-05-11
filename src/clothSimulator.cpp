@@ -369,7 +369,7 @@ void ClothSimulator::drawContents() {
     shader.setUniform("u_height_scaling", m_height_scaling, false);
     
     shader.setUniform("u_texture_cubemap", 5, false);
-    drawWireframe(shader);
+    drawWireframeStructural(shader);
     drawPhong(shader);
           drawWireframe(shader);
     break;
@@ -378,6 +378,48 @@ void ClothSimulator::drawContents() {
   for (CollisionObject *co : *collision_objects) {
     co->render(shader);
   }
+}
+
+void ClothSimulator::drawWireframeStructural(GLShader &shader) {
+// EXPERIMENTAL: replace num_springs with number of structural springs
+    int num_springs = 0;
+    for (int i = 0; i < cloth->springs.size(); i++) {
+        Spring s = cloth->springs[i];
+        if (s.spring_type == STRUCTURAL) {
+            num_springs += 1;
+        }
+    }
+
+    MatrixXf positions(4, num_springs * 2);
+
+    // Draw springs as lines
+    int si = 0;
+
+    for (int i = 0; i < cloth->springs.size(); i++) {
+        Spring s = cloth->springs[i];
+
+        if (s.spring_type != STRUCTURAL) {
+            continue;
+        }
+
+        Vector3D pa = s.pm_a->position;
+        Vector3D pb = s.pm_b->position;
+
+        Vector3D na = s.pm_a->normal();
+        Vector3D nb = s.pm_b->normal();
+
+        positions.col(si) << pa.x, pa.y, pa.z, 1.0;
+        positions.col(si + 1) << pb.x, pb.y, pb.z, 1.0;
+
+        si += 2;
+    }
+
+    //shader.setUniform("u_color", nanogui::Color(1.0f, 1.0f, 1.0f, 1.0f), false);
+    shader.uploadAttrib("in_position", positions, false);
+    // Commented out: the wireframe shader does not have this attribute
+    //shader.uploadAttrib("in_normal", normals);
+
+    shader.drawArray(GL_LINES, 0, num_springs * 2);
 }
 
 void ClothSimulator::drawWireframe(GLShader &shader) {
