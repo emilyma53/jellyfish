@@ -525,13 +525,13 @@ void ClothSimulator::drawPhong(GLShader &shader) {
   glBlendEquation(GL_FUNC_ADD);
 
   // additive blending, no layering artifacts but very bright
-  //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
   // multiplicative blending, no layering artifacts but very dark
   //glBlendFunc(GL_ZERO, GL_SRC_COLOR);
 
   // linear interpolation, has layering artifacts but much better colors
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   // versions with alpha components:
   //glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
