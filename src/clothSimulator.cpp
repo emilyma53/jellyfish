@@ -306,6 +306,7 @@ void ClothSimulator::drawContents() {
     shader.setUniform("u_height_scaling", m_height_scaling, false);
     
     shader.setUniform("u_texture_cubemap", 5, false);
+    drawWireframe(shader);
     drawPhong(shader);
     break;
   }
@@ -463,7 +464,7 @@ void ClothSimulator::drawPhong(GLShader &shader) {
   shader.uploadAttrib("in_tangent", tangents, false);
 
   shader.drawArray(GL_TRIANGLES, 0, num_tris * 3 - 6*20);
-  shader.drawArray(GL_LINES, 0, num_tris * 3);
+//  shader.drawArray(GL_LINES, 0, num_tris * 3);
 }
 
 // ----------------------------------------------------------------------------
