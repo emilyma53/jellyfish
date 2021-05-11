@@ -162,8 +162,6 @@ ClothSimulator::ClothSimulator(std::string project_root, Screen *screen)
   this->load_textures();
 
   glEnable(GL_PROGRAM_POINT_SIZE);
-
-  // possibly comment out this line for translucency
   glEnable(GL_DEPTH_TEST);
 }
 
@@ -376,7 +374,7 @@ void ClothSimulator::drawContents() {
     shader.setUniform("u_height_scaling", m_height_scaling, false);
     
     shader.setUniform("u_texture_cubemap", 5, false);
-    drawWireframe(shader);
+    drawWireframeStructural(shader);
     drawPhong(shader);
     break;
   }
@@ -384,6 +382,48 @@ void ClothSimulator::drawContents() {
   for (CollisionObject *co : *collision_objects) {
     co->render(shader);
   }
+}
+
+void ClothSimulator::drawWireframeStructural(GLShader &shader) {
+// EXPERIMENTAL: replace num_springs with number of structural springs
+    int num_springs = 0;
+    for (int i = 0; i < cloth->springs.size(); i++) {
+        Spring s = cloth->springs[i];
+        if (s.spring_type == STRUCTURAL) {
+            num_springs += 1;
+        }
+    }
+
+    MatrixXf positions(4, num_springs * 2);
+
+    // Draw springs as lines
+    int si = 0;
+
+    for (int i = 0; i < cloth->springs.size(); i++) {
+        Spring s = cloth->springs[i];
+
+        if (s.spring_type != STRUCTURAL) {
+            continue;
+        }
+
+        Vector3D pa = s.pm_a->position;
+        Vector3D pb = s.pm_b->position;
+
+        Vector3D na = s.pm_a->normal();
+        Vector3D nb = s.pm_b->normal();
+
+        positions.col(si) << pa.x, pa.y, pa.z, 1.0;
+        positions.col(si + 1) << pb.x, pb.y, pb.z, 1.0;
+
+        si += 2;
+    }
+
+    //shader.setUniform("u_color", nanogui::Color(1.0f, 1.0f, 1.0f, 1.0f), false);
+    shader.uploadAttrib("in_position", positions, false);
+    // Commented out: the wireframe shader does not have this attribute
+    //shader.uploadAttrib("in_normal", normals);
+
+    shader.drawArray(GL_LINES, 0, num_springs * 2);
 }
 
 void ClothSimulator::drawWireframe(GLShader &shader) {
@@ -443,7 +483,7 @@ void ClothSimulator::drawWireframe(GLShader &shader) {
 }
 
 void ClothSimulator::drawNormals(GLShader &shader) {
-  int num_tris = cloth->clothMesh->triangles.size() - 1;
+  int num_tris = cloth->clothMesh->triangles.size();
 
   MatrixXf positions(4, num_tris * 3);
   MatrixXf normals(4, num_tris * 3);
@@ -475,29 +515,39 @@ void ClothSimulator::drawNormals(GLShader &shader) {
 }
 
 void ClothSimulator::drawPhong(GLShader &shader) {
-  //glDepthMask(GL_FALSE);
-  //glDepthFunc(GL_ALWAYS);
   glDisable(GL_CULL_FACE);
   glEnable(GL_BLEND);
   
   glBlendEquation(GL_FUNC_ADD);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  // additive blending, no layering artifacts but very bright
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+  int exclude = 41;
 
-  // multiplicative blending, no layering artifacts but very dark
-  //glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+  // sort triangles by projected z-value
+  Matrix4f view = getViewMatrix();
+  Matrix4f projection = getProjectionMatrix();
+  Matrix4f viewProjection = projection * view;
 
-  // linear interpolation, has layering artifacts but much better colors
-  //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  std::sort(cloth->clothMesh->triangles.begin(), cloth->clothMesh->triangles.end() - exclude, [&](Triangle* a, Triangle* b) {
 
-  // versions with alpha components:
-  //glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-  //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-  //glBlendFuncSeparate(GL_ZERO, GL_SRC_COLOR, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-  //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+      Vector3D pos1a = a->pm1->position;
+      Vector3D pos2a = a->pm2->position;
+      Vector3D pos3a = a->pm3->position;
 
-  int num_tris = cloth->clothMesh->triangles.size() - 1;
+      Vector3D pos1b = b->pm1->position;
+      Vector3D pos2b = b->pm2->position;
+      Vector3D pos3b = b->pm3->position;
+
+      Vector4f a_mid = Vector4f((pos1a.x + pos2a.x + pos3a.x) / 3, (pos1a.y + pos2a.y + pos3a.y) / 3, (pos1a.z + pos2a.z + pos3a.z) / 3, 1);
+      Vector4f b_mid = Vector4f((pos1b.x + pos2b.x + pos3b.x) / 3, (pos1b.y + pos2b.y + pos3b.y) / 3, (pos1b.z + pos2b.z + pos3b.z) / 3, 1);
+
+      Vector4f a_mid_proj = viewProjection * a_mid;
+      Vector4f b_mid_proj = viewProjection * b_mid;
+
+      return a_mid_proj(2,0) < b_mid_proj(2,0);
+      });
+
+  int num_tris = cloth->clothMesh->triangles.size() - exclude;
 
   MatrixXf positions(4, num_tris * 3);
   MatrixXf normals(4, num_tris * 3);
@@ -538,8 +588,7 @@ void ClothSimulator::drawPhong(GLShader &shader) {
   shader.uploadAttrib("in_uv", uvs, false);
   shader.uploadAttrib("in_tangent", tangents, false);
 
-  shader.drawArray(GL_TRIANGLES, 0, num_tris * 3 - 6*20);
-//  shader.drawArray(GL_LINES, 0, num_tris * 3);
+  shader.drawArray(GL_TRIANGLES, 0, num_tris * 3);
 }
 
 // ----------------------------------------------------------------------------
