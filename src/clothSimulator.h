@@ -47,6 +47,9 @@ private:
   // File management
   
   std::string m_project_root;
+    
+    GLuint vbo;
+    GLuint vao;
 
   // Camera methods
 
