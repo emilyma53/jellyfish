@@ -321,6 +321,11 @@ void ClothSimulator::drawWireframe(GLShader &shader) {
   int num_springs = cp->enable_structural_constraints * num_structural_springs +
                     cp->enable_shearing_constraints * num_shear_springs +
                     cp->enable_bending_constraints * num_bending_springs;
+//  std::cout << " num_springs: " << num_springs;
+//  std::cout << " cloth springs: " << cloth->springs.size();
+
+// EXPERIMENTAL: replace num_springs with cloth->springs.size()
+  num_springs = cloth->springs.size();
 
   MatrixXf positions(4, num_springs * 2);
   MatrixXf normals(4, num_springs * 2);
