@@ -376,6 +376,7 @@ void ClothSimulator::drawContents() {
     shader.setUniform("u_height_scaling", m_height_scaling, false);
     
     shader.setUniform("u_texture_cubemap", 5, false);
+    drawWireframe(shader);
     drawPhong(shader);
     break;
   }
@@ -396,6 +397,11 @@ void ClothSimulator::drawWireframe(GLShader &shader) {
   int num_springs = cp->enable_structural_constraints * num_structural_springs +
                     cp->enable_shearing_constraints * num_shear_springs +
                     cp->enable_bending_constraints * num_bending_springs;
+//  std::cout << " num_springs: " << num_springs;
+//  std::cout << " cloth springs: " << cloth->springs.size();
+
+// EXPERIMENTAL: replace num_springs with cloth->springs.size()
+  num_springs = cloth->springs.size();
 
   MatrixXf positions(4, num_springs * 2);
   MatrixXf normals(4, num_springs * 2);
@@ -533,7 +539,7 @@ void ClothSimulator::drawPhong(GLShader &shader) {
   shader.uploadAttrib("in_tangent", tangents, false);
 
   shader.drawArray(GL_TRIANGLES, 0, num_tris * 3 - 6*20);
-  shader.drawArray(GL_LINES, 0, num_tris * 3);
+//  shader.drawArray(GL_LINES, 0, num_tris * 3);
 }
 
 // ----------------------------------------------------------------------------

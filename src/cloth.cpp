@@ -71,11 +71,12 @@ void Cloth::buildGrid() {
         for (int j = 0; j < num_width_points; j++) {
             if (i == num_height_points - 1) {
                 Vector3D pos = this->point_masses[lastIndexBell - num_width_points + 1 + j].position;
-                if (j % 2 == 0) {
-                    pos.z -= 0.6;
-                } else {
-                    pos.z -= 1.5;
-                }
+//                if (j % 2 == 0) {
+//                    pos.z -= 0.6;
+//                } else {
+//                    pos.z -= 1.5;
+//                }
+                pos.z -= 0.6;
                 
                 this->point_masses.emplace_back(PointMass(pos, false));
             } else {
