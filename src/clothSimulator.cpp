@@ -236,6 +236,59 @@ void ClothSimulator::init() {
 
   camera.configure(camera_info, screen_w, screen_h);
   canonicalCamera.configure(camera_info, screen_w, screen_h);
+    
+    float points[] = {
+      -100.0f,  100.0f, -100.0f,
+      -100.0f, -100.0f, -100.0f,
+       100.0f, -100.0f, -100.0f,
+       100.0f, -100.0f, -100.0f,
+       100.0f,  100.0f, -100.0f,
+      -100.0f,  100.0f, -100.0f,
+      
+      -100.0f, -100.0f,  100.0f,
+      -100.0f, -100.0f, -100.0f,
+      -100.0f,  100.0f, -100.0f,
+      -100.0f,  100.0f, -100.0f,
+      -100.0f,  100.0f,  100.0f,
+      -100.0f, -100.0f,  100.0f,
+      
+       100.0f, -100.0f, -100.0f,
+       100.0f, -100.0f,  100.0f,
+       100.0f,  100.0f,  100.0f,
+       100.0f,  100.0f,  100.0f,
+       100.0f,  100.0f, -100.0f,
+       100.0f, -100.0f, -100.0f,
+       
+      -100.0f, -100.0f,  100.0f,
+      -100.0f,  100.0f,  100.0f,
+       100.0f,  100.0f,  100.0f,
+       100.0f,  100.0f,  100.0f,
+       100.0f, -100.0f,  100.0f,
+      -100.0f, -100.0f,  100.0f,
+      
+      -100.0f,  100.0f, -100.0f,
+       100.0f,  100.0f, -100.0f,
+       100.0f,  100.0f,  100.0f,
+       100.0f,  100.0f,  100.0f,
+      -100.0f,  100.0f,  100.0f,
+      -100.0f,  100.0f, -100.0f,
+      
+      -100.0f, -100.0f, -100.0f,
+      -100.0f, -100.0f,  100.0f,
+       100.0f, -100.0f, -100.0f,
+       100.0f, -100.0f, -100.0f,
+      -100.0f, -100.0f,  100.0f,
+       100.0f, -100.0f,  100.0f
+    };
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, 3 * 36 * sizeof(float), &points, GL_STATIC_DRAW);
+
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 }
 
 bool ClothSimulator::isAlive() { return is_alive; }
@@ -258,23 +311,37 @@ void ClothSimulator::drawContents() {
 
   // Bind the active shader
 
-  const UserShader& active_shader = shaders[active_shader_idx];
-
-  GLShader &shader = *active_shader.nanogui_shader;
-  shader.bind();
     
   // Prepare the camera projection matrix
 
   Matrix4f model;
   model.setIdentity();
-
-  Matrix4f view = getViewMatrix();
-  Matrix4f projection = getProjectionMatrix();
     
-    TexCoords = aPos;
-    gl_Position = projection * view * vec4(aPos, 1.0);
+    // ... set view and projection matrix
 
-  Matrix4f viewProjection = projection * view;
+    UserShader& skyBox = shaders[7];
+    GLShader &skyBoxShader = *skyBox.nanogui_shader;
+    glDepthMask(GL_FALSE);
+    skyBoxShader.bind();
+    
+    Matrix4f view = getViewMatrix();
+    Matrix4f projection = getProjectionMatrix();
+    Matrix4f viewProjection = projection * view;
+    
+    
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, m_gl_cubemap_tex);
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDepthMask(GL_TRUE);
+    
+    skyBoxShader.setUniform("view", view);
+    skyBoxShader.setUniform("projection", projection);
+    
+    const UserShader& active_shader = shaders[active_shader_idx];
+
+    GLShader &shader = *active_shader.nanogui_shader;
+    shader.bind();
 
   shader.setUniform("u_model", model);
   shader.setUniform("u_view_projection", viewProjection);
