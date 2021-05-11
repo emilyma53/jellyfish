@@ -38,6 +38,7 @@ public:
 private:
   virtual void initGUI(Screen *screen);
   void drawWireframe(GLShader &shader);
+  void drawWireframeStructural(GLShader &shader);
   void drawNormals(GLShader &shader);
   void drawPhong(GLShader &shader);
   
