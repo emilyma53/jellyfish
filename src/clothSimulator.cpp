@@ -243,15 +243,8 @@ bool ClothSimulator::isAlive() { return is_alive; }
 void ClothSimulator::drawContents() {
   if (!is_paused) {
     vector<Vector3D> external_accelerations = {gravity};
-//      bool contract = true;
+
     for (int i = 0; i < simulation_steps; i++) {
-//        if (i % 15 == 0) {
-//            if (contract) {
-//                contract = false;
-//            } else {
-//                contract = true;
-//            }
-//        }
       cloth->simulate(frames_per_sec, simulation_steps, cp, external_accelerations, collision_objects);
     }
   }
@@ -306,6 +299,7 @@ void ClothSimulator::drawContents() {
     shader.setUniform("u_height_scaling", m_height_scaling, false);
     
     shader.setUniform("u_texture_cubemap", 5, false);
+    drawWireframe(shader);
     drawPhong(shader);
           drawWireframe(shader);
     break;
@@ -318,11 +312,11 @@ void ClothSimulator::drawContents() {
 
 void ClothSimulator::drawWireframe(GLShader &shader) {
   int num_structural_springs =
-      2 * cloth->num_width_points * cloth->num_height_points -
+      2 * cloth->num_width_points * cloth->num_height_points - 3 *
       cloth->num_width_points; //  - cloth->num_height_points
   int num_shear_springs =
-      2 * (cloth->num_width_points) * (cloth->num_height_points - 1 - 1); // (cloth->num_height_points - 1)
-  int num_bending_springs = num_structural_springs - 2 * cloth->num_width_points; //  - cloth->num_height_points  - cloth->num_width_points
+      2 * (cloth->num_width_points) * (cloth->num_height_points - 3); // (cloth->num_height_points - 1)
+  int num_bending_springs = num_structural_springs - cloth->num_width_points - 3 * cloth->num_height_points; //  - cloth->num_height_points  - cloth->num_width_points
 
   int num_springs = cp->enable_structural_constraints * num_structural_springs +
                     cp->enable_shearing_constraints * num_shear_springs +
@@ -463,7 +457,7 @@ void ClothSimulator::drawPhong(GLShader &shader) {
   shader.uploadAttrib("in_uv", uvs, false);
   shader.uploadAttrib("in_tangent", tangents, false);
 
-  shader.drawArray(GL_TRIANGLES, 0, num_tris * 3 - 2*6*20);
+  shader.drawArray(GL_TRIANGLES, 0, num_tris * 3 - 6*20);
 //  shader.drawArray(GL_LINES, 0, num_tris * 3);
 }
 

@@ -66,34 +66,24 @@ void Cloth::buildGrid() {
         
     // Pointmasses for bell of jellyfish;
     int lastIndexBell = num_width_points * num_height_points - 1;
-    num_height_points += 2;
+    num_height_points += 1;
     for (int i = 0; i < num_height_points; i++) {
         for (int j = 0; j < num_width_points; j++) {
-            if (i == num_height_points - 2) {
-                Vector3D pos = this->point_masses[lastIndexBell - 2 * num_width_points + 1 + j].position;
+            if (i == num_height_points - 1) {
+                Vector3D pos = this->point_masses[lastIndexBell - num_width_points + 1 + j].position;
                 if (j % 2 == 0) {
                     pos.z -= 0.5;
                 } else {
-                    pos.z -= .8;
+                    pos.z -= .5;
                 }
-                
                 this->point_masses.emplace_back(PointMass(pos, false));
-            } else if (i == num_height_points - 1) {
-                Vector3D pos = this->point_masses[lastIndexBell - num_width_points + 1 + j].position;
-                if (j % 2 == 0) {
-                    pos.z -= 1.0;
-                } else {
-                    pos.z -= 1.6;
-                }
-                
-                this->point_masses.emplace_back(PointMass(pos, false));
-            }else {
+            } else {
                 double theta, r, x, y, z;
                 r = R[i];
                 theta = double(j) * (2.0 * PI / T[i]);
                 x = r * cos(theta);
                 y = r * sin(theta);
-                if (i == num_height_points - 3) {
+                if (i == num_height_points - 2) {
                     z = -.6*(R[i] * R[i]);
                 } else {
                     z = -.5*(R[i] * R[i]);
@@ -114,7 +104,7 @@ void Cloth::buildGrid() {
 //    }
 
     // Ring Springs
-    for (int i = 0; i < num_height_points - 3; i++) {
+    for (int i = 0; i < num_height_points - 2; i++) {
         for (int j = 0; j < num_width_points; j++) {
             if (j == 0) continue;
             int index = num_width_points * i + j;
@@ -129,7 +119,7 @@ void Cloth::buildGrid() {
     }
 
     // Bending ring springs
-    for (int i = 0; i < num_height_points - 4; i++) {
+    for (int i = 0; i < num_height_points - 3; i++) {
         for (int j = 0; j < num_width_points; j++) {
             int index = num_width_points * i + j;
             int j2 = (j + 2) % num_width_points;
@@ -142,7 +132,7 @@ void Cloth::buildGrid() {
 
     // vertical bending springs
     // NOTE: i < num_height_point - 3 to avoid bending springs to tentacles
-    for (int i = 0; i < num_height_points - 5; i++) {
+    for (int i = 0; i < num_height_points - 4; i++) {
         for (int j = 0; j < num_width_points; j++) {
             int index = num_width_points * i + j;
             int i2 = (i + 2) % num_height_points;
@@ -156,7 +146,7 @@ void Cloth::buildGrid() {
 
     // Shearing springs
     // NOTE: i < num_height_point - 2 to avoid shearing springs to tentacles
-    for (int i = 0; i < num_height_points - 4; i++) {
+    for (int i = 0; i < num_height_points - 3; i++) {
         for (int j = 0; j < num_width_points; j++) {
             int s1_index1 = num_width_points * i + j;
             int s1_index2 = num_width_points * (i + 1) + ((j + 1) % num_width_points);
