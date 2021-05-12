@@ -34,27 +34,6 @@ void Cloth::buildGrid() {
 	// TODO (Part 1): Build a grid of masses and springs.
 
 	// Add all point masses
-//	double height_interval = this->height / this->num_height_points;
-//	double width_interval = this->width / this->num_width_points;
-//	for (int i = 0; i < this->num_height_points; i++) {
-//		for (int j = 0; j < this->num_width_points; j++) {
-//			Vector3D pos;
-//			bool pin_point = false;
-//			if (this->orientation == HORIZONTAL) {
-//				pos = Vector3D(j * width_interval, 1.0f, i * height_interval);
-//			}
-//			else {
-//				float z_pos = (rand() % 200) / 100000.0f - 0.001f;
-//				pos = Vector3D(j * width_interval, i * height_interval, z_pos);
-//			}
-//			for (vector<int>& xy : this->pinned) {
-//				if (xy[0] == i && xy[1] == j) {
-//					pin_point = true;
-//				}
-//			}
-//			this->point_masses.emplace_back(PointMass(pos, pin_point));
-//		}
-//	}
     this->point_masses = std::vector<PointMass>();
     this->springs = std::vector<Spring>();
     std::vector<double> T {20.0,20.0,20.0,20.0,20.0,20.0,20.0,20.0};
@@ -71,13 +50,11 @@ void Cloth::buildGrid() {
         for (int j = 0; j < num_width_points; j++) {
             if (i == num_height_points - 1) {
                 Vector3D pos = this->point_masses[lastIndexBell - num_width_points + 1 + j].position;
-//                if (j % 2 == 0) {
-//                    pos.z -= 0.6;
-//                } else {
-//                    pos.z -= 1.5;
-//                }
-                pos.z -= 0.6;
-                
+                if (j % 2 == 0) {
+                    pos.z -= 0.5;
+                } else {
+                    pos.z -= .5;
+                }
                 this->point_masses.emplace_back(PointMass(pos, false));
             } else {
                 double theta, r, x, y, z;
@@ -95,15 +72,6 @@ void Cloth::buildGrid() {
             }
         }
     }
-    
-    // Pointmasses for tentacles
-//    int firstIndex = point_masses.size() - num_width_points;
-//    int tentacle_height = 1;
-//    for (int i = 0; i < num_width_points; i++) {
-//        Vector3D pos = point_masses[firstIndex + i].position;
-//        pos.z = pos.z - 4.0;
-//        this->point_masses.emplace_back(PointMass(pos, false));
-//    }
 
     // Ring Springs
     for (int i = 0; i < num_height_points - 2; i++) {
@@ -174,67 +142,6 @@ void Cloth::buildGrid() {
             this->springs.emplace_back(Spring(o, p, STRUCTURAL));
         }
     }
-    
-    // Vertical springs for tentacles
-//    for (int i = 0; i < 1; i++) {
-//        PointMass* o = &this->point_masses[firstIndex + i];
-//        PointMass* p = &this->point_masses[firstIndex + num_width_points + i];
-//        this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-//    }
-
-    // add falange point masses
-   
-//    Vector3D pos = point_masses[counter - 20].position;
-//    pos.z = pos.z - 4.0;
-//    this->point_masses.emplace_back(PointMass(pos, false));
-//    Vector3D pos2 = point_masses[counter - 19].position;
-//    pos2.z = pos2.z - 4.0;
-//    this->point_masses.emplace_back(PointMass(pos2, false));
-//    PointMass* o = &this->point_masses[counter - 20];
-//    PointMass* p = &this->point_masses[counter];
-//    this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-//    o = &this->point_masses[counter - 19];
-//    p = &this->point_masses[counter + 1];
-//    this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-
-
-	// Add all springs
-	// 1. Structural constraints exist between a point mass and the point mass to its left as well as the point mass above it.
-	// 2. Shearing constraints exist between a point mass and the point mass to its diagonal upper left as well as the point mass to its diagonal upper right.
-	// 3. Bending constraints exist between a point mass and the point mass two away to its left as well as the point mass two above it.
-//	for (int i = 0; i < this->num_height_points; i++) {
-//		for (int j = 0; j < this->num_width_points; j++) {
-//			PointMass* p = &this->point_masses[i * this->num_width_points + j];
-//			PointMass* o;
-//			// structural constraints
-//			if (j > 0) { // left
-//				o = &this->point_masses[i * this->num_width_points + (j - 1)];
-//				this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-//			}
-//			if (i > 0) { // top
-//				o = &this->point_masses[(i - 1) * this->num_width_points + j];
-//				this->springs.emplace_back(Spring(o, p, STRUCTURAL));
-//			}
-//			// shearing constraints
-//			if (i > 0 && j > 0) { // diagonal left
-//				o = &this->point_masses[(i - 1) * this->num_width_points + (j - 1)];
-//				this->springs.emplace_back(Spring(o, p, SHEARING));
-//			}
-//			if (i > 0 && j < (this->num_width_points - 1)) { // diagonal right
-//				o = &this->point_masses[(i - 1) * this->num_width_points + (j + 1)];
-//				this->springs.emplace_back(Spring(o, p, SHEARING));
-//			}
-//			// bending constraints
-//			if (j > 1) { // left
-//				o = &this->point_masses[i * this->num_width_points + (j - 2)];
-//				this->springs.emplace_back(Spring(o, p, BENDING));
-//			}
-//			if (i > 1) { // top
-//				o = &this->point_masses[(i - 2) * this->num_width_points + j];
-//				this->springs.emplace_back(Spring(o, p, BENDING));
-//			}
-//		}
-//	}
 }
 
 void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParameters* cp,
@@ -274,18 +181,16 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
                 center.z -= 0.25;
                 force = - center + pm->position;
             }
-//            force = - pm->position;
-//                            force.z = 0.0;
             force.normalize();
-            if (j == num_height_points - 3) {
+            if (j == num_height_points - 4) {
                 
                 pm->forces += force * 10.0;
-            } else if (j == num_height_points - 2) {
-//                force.z /= 2.0;
+            } else if (j >= num_height_points - 3) {
                 pm->forces += force * 2.0;
-            } else {
+            } else if (j == num_height_points - 2) {
+                pm->forces += force * 1.0;
+            }else {
                 pm->forces += force * (double) (j) /(4.0);
-//                force.z = force.z/2.0;
             }
             
         }
@@ -339,25 +244,25 @@ void Cloth::simulate(double frames_per_sec, double simulation_steps, ClothParame
 
 	// TODO (Part 2): Constrain the changes to be such that the spring does not change
 	// in length more than 10% per timestep [Provot 1995].
-//	for (int i = 0; i < this->springs.size(); i++) {
-//		Spring* s = &this->springs[i];
-//		Vector3D dp = s->pm_b->position - s->pm_a->position;
-//		double length = dp.norm();
-//		if (length > s->rest_length * 1.1) {
-//			Vector3D maxspring = s->rest_length * 1.1 * dp.unit();
-//			if (s->pm_a->pinned) {
-//				s->pm_b->position = s->pm_a->position + maxspring;
-//			}
-//			else if (s->pm_b->pinned) {
-//				s->pm_a->position = s->pm_b->position - maxspring;
-//			}
-//			else {
-//				Vector3D midpt = (s->pm_a->position + s->pm_b->position) / 2;
-//				s->pm_a->position = midpt - maxspring / 2;
-//				s->pm_b->position = midpt + maxspring / 2;
-//			}
-//		}
-//	}
+	for (int i = 0; i < this->springs.size(); i++) {
+		Spring* s = &this->springs[i];
+		Vector3D dp = s->pm_b->position - s->pm_a->position;
+		double length = dp.norm();
+		if (length > s->rest_length * 1.1) {
+			Vector3D maxspring = s->rest_length * 1.1 * dp.unit();
+			if (s->pm_a->pinned) {
+				s->pm_b->position = s->pm_a->position + maxspring;
+			}
+			else if (s->pm_b->pinned) {
+				s->pm_a->position = s->pm_b->position - maxspring;
+			}
+			else {
+				Vector3D midpt = (s->pm_a->position + s->pm_b->position) / 2;
+				s->pm_a->position = midpt - maxspring / 2;
+				s->pm_b->position = midpt + maxspring / 2;
+			}
+		}
+	}
 }
 
 void Cloth::build_spatial_map() {
