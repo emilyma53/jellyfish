@@ -39,7 +39,7 @@
         and structural, shearing, and bending springs. Force vectors on the spring-mass model simulate jellyfish muscle
         contraction and modified gravitational forces simulate water buoyancy.
     </p>
-    <br>
+    <br />
 
     <h3 align="middle">Technical Approach</h3>
     <p>
@@ -50,12 +50,12 @@
         side. Forward-scattered translucency is similar to the specular reflection of regular Phong shading, but we replace
         the reflected light direction with the negative light direction and slightly "blur" the light by incorporating a
         sharpness parameter.
-        <br> <br>
+        <br /> <br />
         Next, we enabled alpha blending and changed the alpha channel of the shader to make the texture semi-transparent (4).
         We used interpolated alpha blending, which interpolates between two overlapping fragments and displays the resultant color.
         To resolve ordering issues, we sorted the triangles by z-position in projection space, described in detail in the Discussion section.
     </p>
-    <br>
+    <br />
 
     <p>
         <b>Creating a Wireframe:</b> We based the frame shape of our jellyfish off of the diagrams from Rudolf/Mould (2).
@@ -66,7 +66,7 @@
         between the rings. We then added shearing and bending springs similarly to how we implemented them for the ClothSim
         project (1). For the tentacles, we used only vertical structural springs.
     </p>
-    <br>
+    <br />
 
     <p>
         <b>Simulating Jellyfish Movement with Forces:</b> The forces applied on the jellyfish are cyclic contractions such
@@ -74,7 +74,7 @@
         to simulate underwater incompressibility conditions (2). Since this was out-of-scope for our project, we approximated
         these physical forces instead by using relative comparison. We modified parameters of the Cloth object so that every
         4000 calls to simulate(), the cloth would switch contraction directions.
-        <br><br>
+        <br /><br />
         All of the external force vectors are directed slightly above the center of the top ring of the wireframe, so that
         the force vector has a radial component for contracting and a vertical component to simulate a buoyant force. If the
         jellyfish is currently releasing, then the force vector is multiplied by -1. Every ring layer has a different magnitude
@@ -86,20 +86,20 @@
         For the rest of our forces, we used the same spring forces and Verlet integration from Project 4 to give the jellyfish
         basic cloth structure and movement.
     </p>
-    <br>
+    <br />
 
     <p>
         <b>Improving Our Model:</b> We made additional changes to the jellyfish model by modifying the shape of the cap
         so that it was more bell-shaped. We changed the z value of the bottom ring to be much lower. This also allowed
         the last ring to be more flexible as it was not as tightly connected to the other rings and springs.
-        <br><br>
+        <br /><br />
         We also improved shading at the tentacles by creating individual lines for the tentacles by superimposing the
         wires used in structural springs onto the triangle representation of the jellyfish cap. No forces were applied
         on the tentacles to simulate the flimsiness of jellyfish tentacles.
-        <br><br>
+        <br /><br />
         As a final improvement to the shader, we implemented silhouette enhancement to create the effect of increased opacity
         at the edges of the jellyfish.
-        <br><br>
+        <br /><br />
         As for the background, we implemented a skybox shader using the GLSL Cubemap tutorial (5). The ClothSim codebase
         included code to load the cubemap from six texture files but only supported the sampling via Mirror shader. In
         order to extend the cubemap support to a skybox, we created new vertex and fragment files for the skybox shader
@@ -108,13 +108,7 @@
         With this, we replaced the texture files with cubemap images generated from an equirectangular source image to
         create a 3D underwater background.
     </p>
-    <br>
-
-    <h3 align="middle">Discussion</h3>
-    <p>
-        *insert challenges and lessons learned*
-    </p>
-    <br>
+    <br />
 
     <h3 align="middle">Intermediate Results</h3>
 
@@ -132,23 +126,60 @@
             </tr>
         </table>
     </div>
-    <br>
+    <br />
 
     <div align="center">
         <table style="width=100%">
             <tr align="middle">
                 <td align="middle">
                     <img src="images/buggy_ordering.png" width="400px" />
-                    <p>interpolated alpha blending</p>
+                    <p>interpolated alpha blending (ordering artifacts)</p>
                 </td>
                 <td align="middle">
                     <img src="images/triangle_sorted.png" width="400px" />
-                    <p>interpolated blending with triangle sorting</p>
+                    <p>interpolated alpha blending with triangle sorting</p>
                 </td>
             </tr>
         </table>
     </div>
-    <br>
+    <br />
+
+    <h3 align="middle">Discussion</h3>
+    <p>
+        <b>Jellyfish mesh: </b>
+        We struggled to create separate tentacles because ClothSim assumes that the cloth is modeled as one continuous rectangle.
+        We ultimately excluded the triangles filled in among the tentacles from rendering to create a jellyfish with a textured cap
+        and wireframe tentacles.
+        <br /><br />
+        <b>Transparency:</b>
+        Correctly rendering the transparency of the jellyfish ended up being a much more involved problem than expected.
+        With our custom shader alone, we saw a plethora of visual artifacts, some of which were resolved by specifying
+        a blend function/parameters and disabling backface culling. The ordering artifacts were the hardest to address,
+        only disappearing once we implemented triangle sorting.
+        <br /><br />
+        <b>Triangle sorting:</b>
+        To implement triangle sorting, the most crucial realization was that we had to convert to projection coordinates
+        before sorting by z depth. We researched the OpenGL pipeline and the various transformations applied from model
+        to screen, eventually determining that we needed to somehow find the view and projection matrices to take the triangle
+        vertices from model space to projection space.
+        After digging through the ClothSim code, we eventually found two functions returning these two matrices inclothSimulator.cpp,
+        which finally enabled us to perform depth sorting on our triangle list and fix the last few translucency artifacts.
+    </p>
+    <br />
+    <p>
+        <b>Key takeaways:</b>
+        <br /><br />
+        For one, we learned about the nuances and difficulties of simulating objects as mass spring models. We had to make
+        many modifications to the structure of the model and the external forces on our springs to simulate organic movement.
+        <br /><br />
+        While implementing triangle sorting, the information we gained on the OpenGL pipeline and the coordinate transformations
+        involved (6) allowed us to bridge the conceptual “gap” between the HalfEdge mesh encoded in ClothSim and the vertices/fragments
+        rendered by OpenGL, which was a rewarding realization.
+        <br /><br />
+        We were also forced to recognize the importance of keeping track of which coordinate space we are working in and how to
+        move between spaces, as certain operations (like depth sorting) only make sense in specific coordinate spaces.
+    </p>
+    <br />
 
     <h3 align="middle">Final Results</h3>
 
@@ -162,15 +193,15 @@
             </tr>
             <tr align="middle">
                 <td align="middle">
-                    <video width="600px" align="center" autoplay muted loop>
-                        <source src=images/final_jellyfish.mp4 type=video/mp4>
+                    <video width="600px" align="center" autoplay=autoplay muted=muted loop=loop>
+                        <source src=images/final_jellyfish.mp4 type=video/mp4 />
                     </video>
                     <p>video of jellyfish swimming</p>
                 </td>
             </tr>
         </table>
     </div>
-    <br>
+    <br />
 
     <h3>Team Member Contributions</h3>
     <p>
@@ -181,7 +212,7 @@
         Simon worked on implementing the translucency shader and alpha blending. He also worked on the final implementation
         for triangle sorting.
     </p>
-    <br>
+    <br />
 
     <h3 align="middle">References</h3>
 
@@ -191,8 +222,10 @@
         </li>
         <li>
             Rudolf, D., & Mould, D. (2010). An Interactive Fluid Model of Jellyfish for Animation. In A. Ranchordas,
-            J. M. Pereira, H. J. Araújo, & J. M. R. S. Tavares (Eds.), <i>Computer Vision, Imaging and Computer Graphics.
-            Theory and Applications</i> (pp. 59–72). Springer Berlin Heidelberg.
+            J. M. Pereira, H. J. Araújo, & J. M. R. S. Tavares (Eds.), <i>
+                Computer Vision, Imaging and Computer Graphics.
+                Theory and Applications
+            </i> (pp. 59–72). Springer Berlin Heidelberg.
         </li>
         <li>
             GLSL Programming/Unity/Translucent Surfaces. (2020, April 16). <i>Wikibooks, The Free Textbook Project.</i> Retrieved 04:14,
